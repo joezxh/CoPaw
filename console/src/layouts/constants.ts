@@ -15,6 +15,7 @@ export const DEFAULT_OPEN_KEYS = [
   "control-group",
   "agent-group",
   "settings-group",
+  "enterprise-group",
 ];
 
 export const KEY_TO_PATH: Record<string, string> = {
@@ -35,6 +36,10 @@ export const KEY_TO_PATH: Record<string, string> = {
   security: "/security",
   "token-usage": "/token-usage",
   "voice-transcription": "/voice-transcription",
+  "user-groups": "/user-groups",
+  "dlp-rules": "/dlp-rules",
+  "alert-rules": "/alert-rules",
+  "dify-connectors": "/dify-connectors",
 };
 
 export const KEY_TO_LABEL: Record<string, string> = {
@@ -54,6 +59,9 @@ export const KEY_TO_LABEL: Record<string, string> = {
   security: "nav.security",
   "token-usage": "nav.tokenUsage",
   agents: "nav.agents",
+  "user-groups": "nav.userGroups",
+  "dlp-rules": "nav.dlpRules",
+  "alert-rules": "nav.alertRules",
 };
 
 // ── URL helpers ───────────────────────────────────────────────────────────

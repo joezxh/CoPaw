@@ -49,6 +49,10 @@ const VoiceTranscriptionPage = lazyWithRetry(
   () => import("../../pages/Settings/VoiceTranscription"),
 );
 const AgentsPage = lazyWithRetry(() => import("../../pages/Settings/Agents"));
+const GroupList = lazy(() => import("@/pages/Enterprise/Groups/GroupList"));
+const DLPRules = lazy(() => import("@/pages/Enterprise/Security/DLPRules"));
+const AlertRules = lazy(() => import("@/pages/Enterprise/Security/AlertRules"));
+const DifyConnectors = lazy(() => import("@/pages/Enterprise/Dify/Connectors"));
 
 const { Content } = Layout;
 
@@ -70,6 +74,9 @@ const pathToKey: Record<string, string> = {
   "/security": "security",
   "/token-usage": "token-usage",
   "/voice-transcription": "voice-transcription",
+  "/user-groups": "user-groups",
+  "/dlp-rules": "dlp-rules",
+  "/alert-rules": "alert-rules",
 };
 
 export default function MainLayout() {
@@ -114,9 +121,11 @@ export default function MainLayout() {
                   <Route path="/security" element={<SecurityPage />} />
                   <Route path="/token-usage" element={<TokenUsagePage />} />
                   <Route
-                    path="/voice-transcription"
-                    element={<VoiceTranscriptionPage />}
-                  />
+                  <Route path="/voice-transcription" element={<VoiceTranscriptionPage />} />
+                  <Route path="/user-groups" element={<GroupList />} />
+                  <Route path="/dlp-rules" element={<DLPRules />} />
+                  <Route path="/alert-rules" element={<AlertRules />} />
+                  <Route path="/dify-connectors" element={<DifyConnectors />} />
                 </Routes>
               </Suspense>
             </ChunkErrorBoundary>

@@ -11,6 +11,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from agentscope_runtime.engine.app import AgentApp
+from prometheus_fastapi_instrumentator import Instrumentator
+from prometheus_client import Counter
 
 from agentscope_runtime.engine.schemas.exception import (
     AppBaseException,
@@ -168,6 +170,43 @@ async def lifespan(
     from .auth import auto_register_from_env
 
     auto_register_from_env()
+
+    # ── Enterprise infrastructure initialization ───────────────────────────
+    import os
+
+    _enterprise_enabled = os.environ.get("COPAW_ENTERPRISE_ENABLED", "").lower() in (
+        "1", "true", "yes"
+    )
+    if not _enterprise_enabled:
+        # Also honour config.json for non-docker deployments
+        try:
+            _cfg = load_config(get_config_path())
+            _enterprise_enabled = _cfg.enterprise.enabled
+        except Exception:
+            pass
+
+    if _enterprise_enabled:
+        logger.info("Enterprise mode enabled — initialising PostgreSQL and Redis…")
+        from ..db.postgresql import get_database_manager
+        from ..db.redis_client import get_redis_manager
+
+        _db_manager = get_database_manager()
+        _redis_manager = get_redis_manager()
+
+        # Initialize PostgreSQL (reads COPAW_DB_* env vars)
+        await _db_manager.initialize()
+        app.state.db = _db_manager
+
+        # Initialize Redis (reads COPAW_REDIS_* env vars)
+        await _redis_manager.initialize()
+        app.state.redis = _redis_manager
+
+        logger.info("✓ Enterprise infrastructure connected (PostgreSQL + Redis)")
+    else:
+        logger.info("Enterprise mode disabled — running in single-user mode")
+        app.state.db = None
+        app.state.redis = None
+
 
     try:
         from ..utils.telemetry import (
@@ -414,6 +453,24 @@ async def lifespan(
 
         logger.info("Application shutdown complete")
 
+        # ── Enterprise infrastructure teardown ─────────────────────────────
+        _db = getattr(app.state, "db", None)
+        if _db is not None:
+            try:
+                await _db.close()
+                logger.info("PostgreSQL connection pool closed")
+            except Exception as exc:
+                logger.error("Error closing PostgreSQL pool: %s", exc)
+
+        _redis = getattr(app.state, "redis", None)
+        if _redis is not None:
+            try:
+                await _redis.close()
+                logger.info("Redis connection pool closed")
+            except Exception as exc:
+                logger.error("Error closing Redis pool: %s", exc)
+
+
 
 app = FastAPI(
     lifespan=lifespan,
@@ -422,10 +479,49 @@ app = FastAPI(
     openapi_url="/openapi.json" if DOCS_ENABLED else None,
 )
 
+# Initialize Prometheus Monitoring
+instrumentator = Instrumentator(
+    should_group_status_codes=False,
+    should_ignore_untemplated=True,
+    should_respect_env_var=True,
+    should_instrument_requests_inprogress=True,
+    excluded_handlers=[".*admin.*", "/metrics"],
+    env_var_name="ENABLE_METRICS",
+)
+
+# Custom metric for multi-tenant usage tracking
+tenant_usage_counter = Counter(
+    "copaw_tenant_usage_total",
+    "Total API requests segmented by tenant",
+    ["tenant_id", "method", "endpoint"]
+)
+
+@app.middleware("http")
+async def track_tenant_metrics(request, call_next):
+    response = await call_next(request)
+    # Extract tenant_id from request state (set by EnterpriseAuthMiddleware)
+    tenant_id = getattr(request.state, "tenant_id", "unknown")
+    tenant_usage_counter.labels(
+        tenant_id=tenant_id,
+        method=request.method,
+        endpoint=request.url.path
+    ).inc()
+    return response
+
+instrumentator.instrument(app).expose(app)
+
+
 # Add agent context middleware for agent-scoped routes
 app.add_middleware(AgentContextMiddleware)
 
-app.add_middleware(AuthMiddleware)
+# Enterprise JWT auth middleware (replaces legacy single-user AuthMiddleware)
+import os as _os
+if _os.environ.get("COPAW_ENTERPRISE_ENABLED", "").lower() in ("1", "true", "yes"):
+    from ..enterprise.middleware import EnterpriseAuthMiddleware
+    app.add_middleware(EnterpriseAuthMiddleware)
+else:
+    app.add_middleware(AuthMiddleware)
+
 
 # Apply CORS middleware if CORS_ORIGINS is set
 if CORS_ORIGINS:

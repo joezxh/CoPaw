@@ -137,6 +137,7 @@ class LazyGroup(click.Group):
         "agent": ("copaw.cli.agents_cmd", "agents_group", ".agents_cmd"),
         "plugin": ("copaw.cli.plugin_commands", "plugin", ".plugin_commands"),
         "task": ("copaw.cli.task_cmd", "task_cmd", ".task_cmd"),
+        "dify": ("copaw.cli.dify_cmd", "dify_group", ".dify_cmd"),
     },
 )
 @click.version_option(version=__version__, prog_name="CoPaw")

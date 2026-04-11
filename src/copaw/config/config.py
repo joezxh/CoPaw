@@ -27,6 +27,59 @@ from ..constant import (
 from ..providers.models import ModelSlotConfig
 
 
+# ── Enterprise infrastructure configuration ────────────────────────────────
+
+class DatabaseConfig(BaseModel):
+    """PostgreSQL connection settings.
+
+    All fields fall back to ``COPAW_DB_*`` environment variables so that
+    Docker Compose env injection works without touching config.json.
+    """
+
+    host: str = Field(default="localhost", description="PostgreSQL host")
+    port: int = Field(default=5432, description="PostgreSQL port")
+    database: str = Field(default="copaw_enterprise")
+    username: str = Field(default="copaw")
+    password: str = Field(default="", description="Read from COPAW_DB_PASSWORD env")
+    pool_size: int = Field(default=20, ge=1, le=100)
+    max_overflow: int = Field(default=10, ge=0, le=50)
+    ssl_mode: str = Field(default="prefer")
+
+
+class RedisConfig(BaseModel):
+    """Redis connection settings."""
+
+    host: str = Field(default="localhost")
+    port: int = Field(default=6379)
+    db: int = Field(default=0, ge=0, le=15)
+    password: str = Field(default="")
+    max_connections: int = Field(default=50, ge=1, le=500)
+    key_prefix: str = Field(default="copaw:")
+
+
+class EnterpriseConfig(BaseModel):
+    """Top-level enterprise feature toggle and sub-config."""
+
+    enabled: bool = Field(
+        default=False,
+        description="Enable enterprise features (multi-user, RBAC, audit log, etc.)"
+    )
+    database: DatabaseConfig = Field(default_factory=DatabaseConfig)
+    redis: RedisConfig = Field(default_factory=RedisConfig)
+    audit_log_enabled: bool = Field(
+        default=True,
+        description="Write structured audit logs to PostgreSQL"
+    )
+    task_management_enabled: bool = Field(
+        default=True,
+        description="Enable team task management system"
+    )
+    workflow_engine_enabled: bool = Field(
+        default=False,
+        description="Enable DAG workflow engine (requires enterprise=True)"
+    )
+
+
 def generate_short_agent_id() -> str:
     """Generate a 6-character short UUID for agent identification.
 
@@ -1130,6 +1183,7 @@ class Config(BaseModel):
     agents: AgentsConfig = Field(default_factory=AgentsConfig)
     last_dispatch: Optional[LastDispatchConfig] = None
     security: SecurityConfig = Field(default_factory=SecurityConfig)
+    enterprise: EnterpriseConfig = Field(default_factory=EnterpriseConfig)
     show_tool_details: bool = True
     user_timezone: str = Field(
         default_factory=detect_system_timezone,

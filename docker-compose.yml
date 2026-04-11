@@ -5,18 +5,87 @@ volumes:
     name: copaw-data
   copaw-secrets:
     name: copaw-secrets
+  copaw-pg-data:
+    name: copaw-pg-data
+  copaw-redis-data:
+    name: copaw-redis-data
 
 services:
+  # ─────────────────────────────────────────────
+  # PostgreSQL — enterprise data store
+  # ─────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: copaw-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: copaw_enterprise
+      POSTGRES_USER: copaw
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-copaw_secret}
+      PGDATA: /var/lib/postgresql/data/pgdata
+    ports:
+      - "127.0.0.1:5432:5432"
+    volumes:
+      - copaw-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U copaw -d copaw_enterprise"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  # ─────────────────────────────────────────────
+  # Redis — session cache & message broker
+  # ─────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: copaw-redis
+    restart: always
+    command: >
+      redis-server
+      --requirepass ${REDIS_PASSWORD:-copaw_redis}
+      --maxmemory 512mb
+      --maxmemory-policy allkeys-lru
+    ports:
+      - "127.0.0.1:6379:6379"
+    volumes:
+      - copaw-redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD:-copaw_redis}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  # ─────────────────────────────────────────────
+  # CoPaw enterprise application
+  # ─────────────────────────────────────────────
   copaw:
     image: agentscope/copaw:latest
     container_name: copaw
     restart: always
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     ports:
       - "127.0.0.1:8088:8088"
-    # environment:
-    #   - COPAW_AUTH_ENABLED=true
-    #   - COPAW_AUTH_USERNAME=admin
-    #   - COPAW_AUTH_PASSWORD=yourpassword
+    environment:
+      # Enterprise mode — required
+      COPAW_ENTERPRISE_ENABLED: "true"
+      # PostgreSQL
+      COPAW_DB_HOST: postgres
+      COPAW_DB_PORT: "5432"
+      COPAW_DB_NAME: copaw_enterprise
+      COPAW_DB_USER: copaw
+      COPAW_DB_PASSWORD: ${POSTGRES_PASSWORD:-copaw_secret}
+      # Redis
+      COPAW_REDIS_HOST: redis
+      COPAW_REDIS_PORT: "6379"
+      COPAW_REDIS_PASSWORD: ${REDIS_PASSWORD:-copaw_redis}
+      # JWT secret — override in production!
+      COPAW_JWT_SECRET: ${COPAW_JWT_SECRET:-change-me-in-production}
     volumes:
       - copaw-data:/app/working
       - copaw-secrets:/app/working.secret

@@ -234,6 +234,30 @@ export default function Sidebar({ selectedKey }: SidebarProps) {
       path: "/voice-transcription",
       label: t("nav.voiceTranscription"),
     },
+    {
+      key: "user-groups",
+      icon: <SparkUserGroupLine size={18} />,
+      path: "/user-groups",
+      label: t("nav.userGroups", "User Groups"),
+    },
+    {
+      key: "dlp-rules",
+      icon: <SparkBrowseLine size={18} />,
+      path: "/dlp-rules",
+      label: t("nav.dlpRules", "DLP Rules"),
+    },
+    {
+      key: "alert-rules",
+      icon: <SparkWifiLine size={18} />,
+      path: "/alert-rules",
+      label: t("nav.alertRules", "Security Alerts"),
+    },
+    {
+      key: "dify-connectors",
+      icon: <SparkDataLine size={18} />,
+      path: "/dify-connectors",
+      label: t("nav.difyConnectors", "Dify Connectors"),
+    },
   ];
 
   // ── Menu items ────────────────────────────────────────────────────────────
@@ -339,6 +363,32 @@ export default function Sidebar({ selectedKey }: SidebarProps) {
           key: "voice-transcription",
           label: collapsed ? null : t("nav.voiceTranscription"),
           icon: <SparkMicLine size={16} />,
+        },
+      ],
+    },
+    {
+      key: "enterprise-group",
+      label: collapsed ? null : t("nav.enterprise", "Enterprise"),
+      children: [
+        {
+          key: "user-groups",
+          label: collapsed ? null : t("nav.userGroups", "User Groups"),
+          icon: <SparkUserGroupLine size={16} />,
+        },
+        {
+          key: "dlp-rules",
+          label: collapsed ? null : t("nav.dlpRules", "DLP Rules"),
+          icon: <SparkBrowseLine size={16} />,
+        },
+        {
+          key: "alert-rules",
+          label: collapsed ? null : t("nav.alertRules", "Security Alerts"),
+          icon: <SparkWifiLine size={16} />,
+        },
+        {
+          key: "dify-connectors",
+          label: collapsed ? null : t("nav.difyConnectors", "Dify Connectors"),
+          icon: <SparkDataLine size={16} />,
         },
       ],
     },
