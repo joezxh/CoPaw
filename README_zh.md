@@ -36,7 +36,7 @@
 >
 > **全域触达** — 钉钉、飞书、微信、Discord、Telegram 等频道，一个 CoPaw 按需连接。
 >
-> **🆕 企业级功能** — 多租户架构、RBAC权限管理、团队协作、审计日志、SSO集成、数据加密等。
+> **🆕 企业级功能 (Phase 2-4)** — 多租户存储、双轨架构、元数据索引、向量记忆、企业调度器、通道审计、迁移工具等。
 
 > <details>
 > <summary><b>你可以用 CoPaw 做什么</b></summary>
@@ -220,10 +220,28 @@ CoPaw 企业版在个人助理基础上扩展了企业级能力：
 
 ### 🗄️ 基础设施
 
-- **PostgreSQL**：主数据库，存储用户、角色、任务、审计日志
-- **Redis**：会话管理、缓存、实时消息
+- **PostgreSQL**：主数据库，存储用户、角色、任务、审计日志 + **pgvector向量扩展**
+- **Redis**：会话管理、缓存、实时消息 + **分布式锁**
 - **Alembic**：数据库迁移管理
 - **Prometheus**：指标采集和告警
+- **对象存储**：MinIO/S3存储原始文件 + **PostgreSQL元数据索引**
+
+### 🆕 最新企业功能 (Phase 2-4)
+
+**多租户存储与元数据系统**：
+- 分层对象键命名，租户隔离
+- RBAC四级权限控制 (super_admin/tenant_admin/dept_admin/user)
+- 自动从 agent.json/skill.json/chats.json 抽取元数据
+- PostgreSQL GIN索引全文搜索
+- pgvector IVFFlat索引向量记忆系统
+
+**企业调度与审计**：
+- 基于cron的任务调度，Redis分布式锁
+- 通道消息审计中间件，集成DLP
+- 迁移工具：SQLite→PostgreSQL + 批量索引
+- 模型注册表和推理任务管理
+
+👉 详见 [企业新功能](enterprise-new-features.md)
 
 ### 📋 企业 API 端点
 
@@ -238,6 +256,10 @@ CoPaw 企业版在个人助理基础上扩展了企业级能力：
 | `/api/enterprise/dlp` | 数据防泄露规则 |
 | `/api/enterprise/alerts` | 告警管理 |
 | `/api/enterprise/dify` | Dify 集成 |
+| **`/api/metadata/search`** | **全文搜索存储对象** |
+| **`/api/metadata/agents`** | **列出Agent配置** |
+| **`/api/metadata/skills`** | **列出Skill配置** |
+| **`/api/metadata/stats/by-category`** | **存储统计** |
 
 ---
 

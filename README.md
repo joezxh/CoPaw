@@ -44,7 +44,7 @@ Your AI assistant — from personal use to enterprise deployment. Easy to instal
 >
 > **Every channel** — DingTalk, Feishu, WeChat, Discord, Telegram, and more. One CoPaw, connect as needed.
 >
-> **🆕 Enterprise Features** — Multi-tenant architecture, RBAC permission management, team collaboration, audit logging, SSO integration, data encryption, and more.
+> **🆕 Enterprise Features (Phase 2-4)** — Multi-tenant storage, dual-track architecture, metadata indexing, vector memory, enterprise scheduler, channel audit, migration tools, and more.
 
 > <details>
 > <summary><b>What you can do with CoPaw</b></summary>
@@ -231,10 +231,28 @@ Pre-built skills for common enterprise scenarios:
 
 ### 🗄️ Infrastructure
 
-- **PostgreSQL**: Primary database for users, roles, tasks, audit logs
-- **Redis**: Session management, caching, real-time messaging
+- **PostgreSQL**: Primary database for users, roles, tasks, audit logs + **pgvector for AI memory**
+- **Redis**: Session management, caching, real-time messaging + **distributed locks**
 - **Alembic**: Database migration management
 - **Prometheus**: Metrics collection and alerting
+- **Object Storage**: MinIO/S3 for raw files with **PostgreSQL metadata index**
+
+### 🆕 Latest Enterprise Features (Phase 2-4)
+
+**Multi-Tenant Storage & Metadata System**:
+- Hierarchical object key naming with tenant isolation
+- RBAC 4-level access control (super_admin/tenant_admin/dept_admin/user)
+- Automatic metadata extraction from agent.json, skill.json, chats.json
+- Full-text search with PostgreSQL GIN index
+- Vector memory system with pgvector IVFFlat index
+
+**Enterprise Scheduler & Audit**:
+- Cron-based task scheduling with Redis distributed locks
+- Channel message audit middleware with DLP integration
+- Migration tools: SQLite→PostgreSQL + batch indexing
+- Model registry and inference task management
+
+👉 See [Enterprise New Features](enterprise-new-features.md) for complete details.
 
 ### 📋 Enterprise API Endpoints
 
@@ -249,6 +267,10 @@ Pre-built skills for common enterprise scenarios:
 | `/api/enterprise/dlp` | Data loss prevention rules |
 | `/api/enterprise/alerts` | Alert management |
 | `/api/enterprise/dify` | Dify integration |
+| **`/api/metadata/search`** | **Full-text search storage objects** |
+| **`/api/metadata/agents`** | **List agent configurations** |
+| **`/api/metadata/skills`** | **List skill configurations** |
+| **`/api/metadata/stats/by-category`** | **Storage statistics** |
 
 ---
 
