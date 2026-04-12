@@ -29,7 +29,6 @@ def upgrade() -> None:
         sa.Column('agent_id', sa.String(100), nullable=True),
         sa.Column('content', sa.Text, nullable=False),
         sa.Column('content_hash', sa.String(64), nullable=True),
-        sa.Column('embedding', sa.Text, nullable=True, comment='向量嵌入 (JSON数组字符串)'),
         sa.Column('embedding_model', sa.String(100), nullable=True),
         sa.Column('category', sa.String(50), nullable=True),
         sa.Column('importance', sa.Float, server_default='0.5', nullable=False),
@@ -45,7 +44,8 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(['tenant_id'], ['sys_tenants.id']),
         comment='AI 记忆条目表'
     )
-    
+    # 添加 embedding 列（使用原生 vector 类型）
+    op.execute('ALTER TABLE ai_memories ADD COLUMN embedding vector(1536)')
     # 索引
     op.create_index('ix_ai_memories_tenant', 'ai_memories', ['tenant_id'])
     op.create_index('ix_ai_memories_workspace', 'ai_memories', ['workspace_id'])
