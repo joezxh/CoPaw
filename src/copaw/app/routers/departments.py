@@ -62,13 +62,13 @@ async def get_tree(current_user: dict = Depends(get_current_user)):
             WITH RECURSIVE dept_tree AS (
                 SELECT id, name, parent_id, manager_id, level, description,
                        created_at, ARRAY[id::text] AS path
-                FROM departments
+                FROM sys_departments
                 WHERE parent_id IS NULL
               UNION ALL
                 SELECT d.id, d.name, d.parent_id, d.manager_id, d.level,
                        d.description, d.created_at,
                        dt.path || d.id::text
-                FROM departments d
+                FROM sys_departments d
                 JOIN dept_tree dt ON d.parent_id = dt.id
             )
             SELECT * FROM dept_tree ORDER BY path;

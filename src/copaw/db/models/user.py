@@ -23,35 +23,55 @@ if TYPE_CHECKING:
 
 
 class User(Base, UUIDPrimaryKeyMixin, TimestampMixin, TenantAwareMixin):
-    """Enterprise user account."""
+    """Enterprise user account.
+    
+    企业用户账户表 - 存储系统中的所有用户基本信息、认证凭据和状态
+    """
 
-    __tablename__ = "users"
+    __tablename__ = "sys_users"
+    __table_args__ = {"comment": "企业用户账户表"}
 
     username: Mapped[str] = mapped_column(
-        String(100), unique=True, nullable=False, index=True
+        String(100), unique=True, nullable=False, index=True,
+        comment="用户名(登录账号)"
     )
     email: Mapped[Optional[str]] = mapped_column(
-        String(255), unique=True, nullable=True, index=True
+        String(255), unique=True, nullable=True, index=True,
+        comment="电子邮箱地址"
     )
-    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
-    password_salt: Mapped[str] = mapped_column(String(64), nullable=False)
+    password_hash: Mapped[str] = mapped_column(
+        String(255), nullable=False,
+        comment="密码哈希值(加密存储)"
+    )
+    password_salt: Mapped[str] = mapped_column(
+        String(64), nullable=False,
+        comment="密码盐值(用于增强密码安全性)"
+    )
     display_name: Mapped[Optional[str]] = mapped_column(
-        String(200), nullable=True
+        String(200), nullable=True,
+        comment="显示名称(昵称)"
     )
     department_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("departments.id", ondelete="SET NULL"),
+        ForeignKey("sys_departments.id", ondelete="SET NULL"),
         nullable=True,
+        comment="所属部门ID"
     )
     status: Mapped[str] = mapped_column(
-        String(20), default="active", nullable=False
-    )  # active | disabled | vacation
-    mfa_enabled: Mapped[bool] = mapped_column(Boolean, default=False)
+        String(20), default="active", nullable=False,
+        comment="账户状态: active(活跃) | disabled(禁用) | vacation(休假)"
+    )
+    mfa_enabled: Mapped[bool] = mapped_column(
+        Boolean, default=False,
+        comment="是否启用多因素认证(MFA)"
+    )
     mfa_secret: Mapped[Optional[str]] = mapped_column(
-        EncryptedString(), nullable=True
-    )  # AES-256-GCM encrypted at rest
+        EncryptedString(), nullable=True,
+        comment="MFA密钥(AES-256-GCM加密存储)"
+    )
     last_login_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
+        DateTime(timezone=True), nullable=True,
+        comment="最后登录时间"
     )
 
     # Relationships
@@ -59,7 +79,8 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin, TenantAwareMixin):
         "Department", back_populates="members", foreign_keys=[department_id]
     )
     roles: Mapped[List["UserRole"]] = relationship(
-        "UserRole", back_populates="user", cascade="all, delete-orphan"
+        "UserRole", back_populates="user", cascade="all, delete-orphan",
+        foreign_keys="UserRole.user_id"
     )
     sessions: Mapped[List["UserSession"]] = relationship(
         "UserSession", back_populates="user", cascade="all, delete-orphan"
@@ -73,20 +94,27 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin, TenantAwareMixin):
 
 
 class UserGroup(Base, UUIDPrimaryKeyMixin, TimestampMixin, TenantAwareMixin):
-    """A named group of users (team / squad / department group)."""
+    """A named group of users (team / squad / department group).
+    
+    用户组表 - 用于管理用户分组,支持团队、小队或部门级别的分组
+    """
 
-    __tablename__ = "user_groups"
+    __tablename__ = "sys_user_groups"
+    __table_args__ = {"comment": "用户组表"}
 
     name: Mapped[str] = mapped_column(
-        String(200), unique=True, nullable=False
+        String(200), unique=True, nullable=False,
+        comment="用户组名称"
     )
     description: Mapped[Optional[str]] = mapped_column(
-        String(500), nullable=True
+        String(500), nullable=True,
+        comment="用户组描述"
     )
     department_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("departments.id", ondelete="SET NULL"),
+        ForeignKey("sys_departments.id", ondelete="SET NULL"),
         nullable=True,
+        comment="所属部门ID"
     )
 
     # Relationships
@@ -99,22 +127,29 @@ class UserGroup(Base, UUIDPrimaryKeyMixin, TimestampMixin, TenantAwareMixin):
 
 
 class UserGroupMember(Base):
-    """Association table: Many-to-many User ↔ UserGroup."""
+    """Association table: Many-to-many User ↔ UserGroup.
+    
+    用户组成员关联表 - 实现用户与用户组的多对多关系
+    """
 
-    __tablename__ = "user_group_members"
+    __tablename__ = "sys_user_group_members"
+    __table_args__ = {"comment": "用户组成员关联表"}
 
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey("sys_users.id", ondelete="CASCADE"),
         primary_key=True,
+        comment="用户ID"
     )
     group_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("user_groups.id", ondelete="CASCADE"),
+        ForeignKey("sys_user_groups.id", ondelete="CASCADE"),
         primary_key=True,
+        comment="用户组ID"
     )
     joined_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now()
+        DateTime(timezone=True), server_default=func.now(),
+        comment="加入时间"
     )
 
     # Relationships

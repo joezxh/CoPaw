@@ -677,12 +677,12 @@ function SkillsPage() {
               searchValue={searchQuery}
               onSearch={setSearchQuery}
               open={filterOpen}
-              onDropdownVisibleChange={setFilterOpen}
+              onOpenChange={setFilterOpen}
               allowClear
               maxTagCount="responsive"
               suffixIcon={<SearchOutlined />}
               notFoundContent={<></>}
-              dropdownRender={() => (
+              popupRender={() => (
                 <SkillFilterDropdown
                   allTags={allTags}
                   searchTags={searchTags}

@@ -16,20 +16,27 @@ if TYPE_CHECKING:
 
 
 class Permission(Base, UUIDPrimaryKeyMixin, TenantAwareMixin):
-    """A discrete permission entry (resource + action)."""
+    """A discrete permission entry (resource + action).
+    
+    权限表 - 定义系统中的权限项,由资源(resource)和操作(action)组成
+    """
 
-    __tablename__ = "permissions"
+    __tablename__ = "sys_permissions"
+    __table_args__ = {"comment": "权限表"}
 
     resource: Mapped[str] = mapped_column(
-        String(200), nullable=False, index=True
+        String(200), nullable=False, index=True,
+        comment="资源标识(如: 'agent:*', 'task:read', 'user:manage')"
     )
     # e.g. 'agent:*', 'task:read', 'user:manage'
     action: Mapped[str] = mapped_column(
-        String(50), nullable=False
+        String(50), nullable=False,
+        comment="操作类型: 'read' | 'write' | 'execute' | 'manage' | '*'"
     )
     # e.g. 'read' | 'write' | 'execute' | 'manage' | '*'
     description: Mapped[Optional[str]] = mapped_column(
-        String(500), nullable=True
+        String(500), nullable=True,
+        comment="权限描述"
     )
 
     # Relationships

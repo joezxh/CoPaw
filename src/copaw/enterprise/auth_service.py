@@ -38,7 +38,11 @@ _REFRESH_TOKEN_EXPIRE_DAYS = int(
     os.environ.get("COPAW_JWT_REFRESH_EXPIRE_DAYS", "7")
 )
 
-_pwd_ctx = CryptContext(schemes=["bcrypt"], deprecated="auto")
+_pwd_ctx = CryptContext(
+    schemes=["bcrypt"],
+    deprecated="auto",
+    bcrypt__rounds=12,
+)
 
 
 def _utcnow() -> datetime:
@@ -321,3 +325,43 @@ class AuthService:
             raise ValueError("User not found")
         user.mfa_enabled = True
         user.mfa_secret = secret
+    @staticmethod
+    async def create_access_token(
+        session: AsyncSession,
+        user_id: str,
+        username: str,
+        roles: list[str],
+        tenant_id: str = "default-tenant",
+    ) -> dict:
+        """Create a new access token for an existing user (e.g., after SSO login)."""
+        jti = secrets.token_hex(32)
+        now = _utcnow()
+        access_expires = now + timedelta(minutes=_ACCESS_TOKEN_EXPIRE_MINUTES)
+
+        # Create session record
+        db_session = UserSession(
+            user_id=uuid.UUID(user_id),
+            access_token_jti=jti,
+            ip_address=None,
+            user_agent="SSO",
+            created_at=now,
+            expires_at=access_expires,
+        )
+        session.add(db_session)
+        await session.flush()
+
+        access_token = _create_access_token(
+            user_id=user_id,
+            username=username,
+            roles=roles,
+            jti=jti,
+        )
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "expires_in": _ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+            "user_id": user_id,
+            "username": username,
+            "roles": roles,
+        }

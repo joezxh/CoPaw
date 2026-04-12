@@ -402,6 +402,8 @@ async def add_model_endpoint(
             provider_id=provider_id,
             model_info=ModelInfo(id=body.id, name=body.name),
         )  # Validate provider exists and add model
+    except NotImplementedError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     except (ValueError, AppBaseException) as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
     return provider

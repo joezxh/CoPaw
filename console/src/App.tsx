@@ -21,7 +21,7 @@ import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import LoginPage from "./pages/Login";
 import { authApi } from "./api/modules/auth";
 import { languageApi } from "./api/modules/language";
-import { getApiUrl, getApiToken, clearAuthToken } from "./api/config";
+import { getApiUrl, getApiToken, clearAuthToken, setAuthDisabled } from "./api/config";
 import "./styles/layout.css";
 import "./styles/form-override.css";
 
@@ -55,27 +55,58 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await authApi.getStatus();
+        // Step 1: Check if auth is enabled at all
+        const authStatus = await authApi.getStatus().catch(() => null);
         if (cancelled) return;
-        if (!res.enabled) {
-          setStatus("ok");
+        
+        if (!authStatus || !authStatus.enabled) {
+          // Auth is disabled, allow access directly
+          setAuthDisabled(true);
+          if (!cancelled) setStatus("ok");
           return;
         }
+        
+        // Auth is enabled
+        setAuthDisabled(false);
+        
+        // Step 2: Auth is enabled, check for token
         const token = getApiToken();
         if (!token) {
-          setStatus("auth-required");
+          if (!cancelled) setStatus("auth-required");
           return;
         }
+        
+        // Step 3: Validate token - try enterprise first, then legacy
+        try {
+          const res = await fetch(getApiUrl("/enterprise/auth/me"), {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (!cancelled) {
+            if (res.ok) {
+              setStatus("ok");
+            } else {
+              console.warn("[AuthGuard] Enterprise /me failed:", res.status, await res.text().catch(() => ""));
+              clearAuthToken();
+              setStatus("auth-required");
+            }
+            return;
+          }
+        } catch (err) {
+          console.warn("[AuthGuard] Enterprise auth check failed:", err);
+          // Enterprise auth not available, try legacy
+        }
+        
         try {
           const r = await fetch(getApiUrl("/auth/verify"), {
             headers: { Authorization: `Bearer ${token}` },
           });
-          if (cancelled) return;
-          if (r.ok) {
-            setStatus("ok");
-          } else {
-            clearAuthToken();
-            setStatus("auth-required");
+          if (!cancelled) {
+            if (r.ok) {
+              setStatus("ok");
+            } else {
+              clearAuthToken();
+              setStatus("auth-required");
+            }
           }
         } catch {
           if (!cancelled) {
@@ -84,6 +115,7 @@ function AuthGuard({ children }: { children: React.ReactNode }) {
           }
         }
       } catch {
+        // Unexpected error, allow access
         if (!cancelled) setStatus("ok");
       }
     })();

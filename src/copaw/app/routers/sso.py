@@ -15,7 +15,7 @@ from ...db.postgresql import get_db_session
 from ...db.models.user import User
 from ...db.models.tenant import Tenant
 from ...enterprise.sso_client import oauth, get_sso_client
-from ...enterprise.auth_service import create_access_token
+from ...enterprise.auth_service import AuthService
 
 logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/sso", tags=["sso"])

@@ -19,30 +19,48 @@ if TYPE_CHECKING:
 
 
 class UserSession(Base, UUIDPrimaryKeyMixin, TenantAwareMixin):
-    """Active user session record (mirrored in Redis for fast lookup)."""
+    """Active user session record (mirrored in Redis for fast lookup).
+    
+    用户会话表 - 记录活跃的用户会话,Redis中也有镜像用于快速查找
+    """
 
-    __tablename__ = "user_sessions"
+    __tablename__ = "sys_user_sessions"
+    __table_args__ = {"comment": "用户会话表"}
 
     user_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("users.id", ondelete="CASCADE"),
+        ForeignKey("sys_users.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
+        comment="用户ID"
     )
     access_token_jti: Mapped[str] = mapped_column(
-        String(64), unique=True, nullable=False, index=True
-    )  # JWT ID for revocation
-    ip_address: Mapped[Optional[str]] = mapped_column(String(45), nullable=True)
-    user_agent: Mapped[Optional[str]] = mapped_column(String(500), nullable=True)
+        String(64), unique=True, nullable=False, index=True,
+        comment="访问令牌的JWT ID(用于撤销)"
+    )
+    ip_address: Mapped[Optional[str]] = mapped_column(
+        String(45), nullable=True,
+        comment="客户端IP地址"
+    )
+    user_agent: Mapped[Optional[str]] = mapped_column(
+        String(500), nullable=True,
+        comment="客户端User-Agent信息"
+    )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
+        DateTime(timezone=True), nullable=False,
+        comment="会话创建时间"
     )
     expires_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False, index=True
+        DateTime(timezone=True), nullable=False, index=True,
+        comment="会话过期时间"
     )
-    revoked: Mapped[bool] = mapped_column(Boolean, default=False)
+    revoked: Mapped[bool] = mapped_column(
+        Boolean, default=False,
+        comment="是否已撤销"
+    )
     revoked_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
+        DateTime(timezone=True), nullable=True,
+        comment="撤销时间"
     )
 
     # Relationships
@@ -56,26 +74,40 @@ class UserSession(Base, UUIDPrimaryKeyMixin, TenantAwareMixin):
 
 
 class RefreshToken(Base, UUIDPrimaryKeyMixin, TenantAwareMixin):
-    """Refresh token record — one-time-use, stored hashed."""
+    """Refresh token record — one-time-use, stored hashed.
+    
+    刷新令牌表 - 存储刷新令牌(一次性使用,哈希存储)
+    """
 
-    __tablename__ = "refresh_tokens"
+    __tablename__ = "sys_refresh_tokens"
+    __table_args__ = {"comment": "刷新令牌表"}
 
     session_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True),
-        ForeignKey("user_sessions.id", ondelete="CASCADE"),
+        ForeignKey("sys_user_sessions.id", ondelete="CASCADE"),
         nullable=False,
         index=True,
+        comment="会话ID"
     )
-    token_hash: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)
+    token_hash: Mapped[str] = mapped_column(
+        String(128), nullable=False, unique=True,
+        comment="令牌哈希值"
+    )
     created_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
+        DateTime(timezone=True), nullable=False,
+        comment="创建时间"
     )
     expires_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), nullable=False
+        DateTime(timezone=True), nullable=False,
+        comment="过期时间"
     )
-    used: Mapped[bool] = mapped_column(Boolean, default=False)
+    used: Mapped[bool] = mapped_column(
+        Boolean, default=False,
+        comment="是否已使用"
+    )
     used_at: Mapped[Optional[datetime]] = mapped_column(
-        DateTime(timezone=True), nullable=True
+        DateTime(timezone=True), nullable=True,
+        comment="使用时间"
     )
 
     session: Mapped["UserSession"] = relationship(

@@ -1,0 +1,60 @@
+{
+  "schema_version": "workspace-skill-manifest.v1",
+  "version": 1775909552028,
+  "skills": {
+    "guidance": {
+      "enabled": true,
+      "channels": [
+        "all"
+      ],
+      "source": "builtin",
+      "config": {},
+      "metadata": {
+        "name": "guidance",
+        "description": "回答用户关于 CoPaw 安装与配置的问题：优先定位并阅读本地文档，再提炼答案；若本地信息不足，兜底访问官网文档。",
+        "version_text": "1.1",
+        "commit_text": "",
+        "signature": "8cff61fed127b1f2f4c6fc5ee399bcf083e3ed122d80a6736c426656619f3822",
+        "source": "builtin",
+        "protected": false,
+        "requirements": {
+          "require_bins": [],
+          "require_envs": []
+        },
+        "updated_at": "2026-04-11T05:48:50.365452Z"
+      },
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.365452Z"
+    },
+    "copaw_source_index": {
+      "enabled": true,
+      "channels": [
+        "all"
+      ],
+      "source": "builtin",
+      "config": {},
+      "metadata": {
+        "name": "copaw_source_index",
+        "description": "将用户问题中的主题、关键词映射到 CoPaw 官方文档路径与常见源码入口，减少盲目搜索。适用于内置 QA Agent 在回答安装、配置、技能、MCP、多智能体、记忆、CLI 等问题时快速选定要读的文件。",
+        "version_text": "1.1",
+        "commit_text": "",
+        "signature": "b7963d489cefb6367f353a283108735f33fea15abae95a7b6e232db10ff377f8",
+        "source": "builtin",
+        "protected": false,
+        "requirements": {
+          "require_bins": [],
+          "require_envs": []
+        },
+        "updated_at": "2026-04-11T05:48:50.313610Z"
+      },
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.313610Z"
+    }
+  }
+}

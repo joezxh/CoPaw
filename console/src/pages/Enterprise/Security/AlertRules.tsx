@@ -9,7 +9,6 @@ import {
   getAlertEvents,
   testNotification,
   AlertRule,
-  AlertEvent,
 } from "../../../api/modules/enterprise-alerts";
 
 const { Option } = Select;

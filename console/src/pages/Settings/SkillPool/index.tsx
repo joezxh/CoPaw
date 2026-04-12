@@ -162,12 +162,12 @@ function SkillPoolPage() {
                 searchValue={pool.searchQuery}
                 onSearch={pool.setSearchQuery}
                 open={pool.filterOpen}
-                onDropdownVisibleChange={pool.setFilterOpen}
+                onOpenChange={pool.setFilterOpen}
                 allowClear
                 maxTagCount="responsive"
                 suffixIcon={<SearchOutlined />}
                 notFoundContent={<></>}
-                dropdownRender={() => (
+                popupRender={() => (
                   <SkillFilterDropdown
                     allTags={pool.allTags}
                     searchTags={pool.searchTags}

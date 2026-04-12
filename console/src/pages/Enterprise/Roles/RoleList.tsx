@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Table, Button, Space, Tag, Modal, Form, Input,
   message, Popconfirm, Transfer, Typography, Switch

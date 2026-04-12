@@ -1,4 +1,4 @@
-import { Suspense } from "react";
+import { Suspense, lazy } from "react";
 import { Layout, Spin } from "antd";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
@@ -53,6 +53,11 @@ const GroupList = lazy(() => import("@/pages/Enterprise/Groups/GroupList"));
 const DLPRules = lazy(() => import("@/pages/Enterprise/Security/DLPRules"));
 const AlertRules = lazy(() => import("@/pages/Enterprise/Security/AlertRules"));
 const DifyConnectors = lazy(() => import("@/pages/Enterprise/Dify/Connectors"));
+const UserList = lazy(() => import("@/pages/Enterprise/Users/UserList"));
+const RoleList = lazy(() => import("@/pages/Enterprise/Roles/RoleList"));
+const WorkflowList = lazy(() => import("@/pages/Enterprise/Workflows/WorkflowList"));
+const TaskBoard = lazy(() => import("@/pages/Enterprise/Tasks/TaskBoard"));
+const AuditLog = lazy(() => import("@/pages/Enterprise/Audit/AuditLog"));
 
 const { Content } = Layout;
 
@@ -74,9 +79,16 @@ const pathToKey: Record<string, string> = {
   "/security": "security",
   "/token-usage": "token-usage",
   "/voice-transcription": "voice-transcription",
-  "/user-groups": "user-groups",
-  "/dlp-rules": "dlp-rules",
-  "/alert-rules": "alert-rules",
+  // Enterprise
+  "/enterprise/users": "enterprise-users",
+  "/enterprise/permissions": "enterprise-permissions",
+  "/enterprise/groups": "user-groups",
+  "/enterprise/workflows": "enterprise-workflows",
+  "/enterprise/tasks": "enterprise-tasks",
+  "/enterprise/dlp-rules": "dlp-rules",
+  "/enterprise/alert-rules": "alert-rules",
+  "/enterprise/dify-connectors": "dify-connectors",
+  "/enterprise/audit": "enterprise-audit",
 };
 
 export default function MainLayout() {
@@ -99,7 +111,9 @@ export default function MainLayout() {
                   <Spin
                     tip={t("common.loading")}
                     style={{ display: "block", margin: "20vh auto" }}
-                  />
+                  >
+                    <div />
+                  </Spin>
                 }
               >
                 <Routes>
@@ -120,12 +134,16 @@ export default function MainLayout() {
                   <Route path="/agent-config" element={<AgentConfigPage />} />
                   <Route path="/security" element={<SecurityPage />} />
                   <Route path="/token-usage" element={<TokenUsagePage />} />
-                  <Route
                   <Route path="/voice-transcription" element={<VoiceTranscriptionPage />} />
-                  <Route path="/user-groups" element={<GroupList />} />
-                  <Route path="/dlp-rules" element={<DLPRules />} />
-                  <Route path="/alert-rules" element={<AlertRules />} />
-                  <Route path="/dify-connectors" element={<DifyConnectors />} />
+                  <Route path="/enterprise/users" element={<UserList />} />
+                  <Route path="/enterprise/permissions" element={<RoleList />} />
+                  <Route path="/enterprise/groups" element={<GroupList />} />
+                  <Route path="/enterprise/workflows" element={<WorkflowList />} />
+                  <Route path="/enterprise/tasks" element={<TaskBoard />} />
+                  <Route path="/enterprise/dlp-rules" element={<DLPRules />} />
+                  <Route path="/enterprise/alert-rules" element={<AlertRules />} />
+                  <Route path="/enterprise/dify-connectors" element={<DifyConnectors />} />
+                  <Route path="/enterprise/audit" element={<AuditLog />} />
                 </Routes>
               </Suspense>
             </ChunkErrorBoundary>

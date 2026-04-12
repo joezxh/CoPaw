@@ -17,6 +17,28 @@ from .workflow import Workflow, WorkflowExecution  # noqa: F401
 from .dlp import DLPRule, DLPEvent  # noqa: F401
 from .alert import AlertRule, AlertEvent  # noqa: F401
 from .dify import DifyConnector  # noqa: F401
+from .workspace import Workspace, WorkspaceMember, WorkspaceAgent  # noqa: F401
+from .tenant import Tenant  # noqa: F401
+
+# Phase 3: Storage metadata models
+from .storage_meta import (  # noqa: F401
+    StorageObject,
+    AgentConfig,
+    SkillConfig,
+    Conversation,
+    ConversationMessage,
+    TokenUsageStat,
+    MemoryDocument,
+    ChannelMessage,
+)
+
+# Phase 3: Memory vector models (pgvector)
+from .memory import (  # noqa: F401
+    AIMemory,
+    MemoryTag,
+    MemorySession,
+    MemorySessionLink,
+)
 __all__ = [
     "Base",
     "User",
@@ -34,4 +56,27 @@ __all__ = [
     "TaskComment",
     "Workflow",
     "WorkflowExecution",
+    "DLPRule",
+    "DLPEvent",
+    "AlertRule",
+    "AlertEvent",
+    "DifyConnector",
+    "Workspace",
+    "WorkspaceMember",
+    "WorkspaceAgent",
+    "Tenant",
+    # Phase 3: Storage metadata
+    "StorageObject",
+    "AgentConfig",
+    "SkillConfig",
+    "Conversation",
+    "ConversationMessage",
+    "TokenUsageStat",
+    "MemoryDocument",
+    "ChannelMessage",
+    # Phase 3: Memory vectors
+    "AIMemory",
+    "MemoryTag",
+    "MemorySession",
+    "MemorySessionLink",
 ]

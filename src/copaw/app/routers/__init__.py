@@ -37,6 +37,7 @@ from .alerts import router as alerts_router
 from .dify import router as dify_router
 from .sso import router as sso_router
 from .skill_store import router as skill_store_router
+from .storage import router as storage_router
 
 router = APIRouter()
 
@@ -75,6 +76,7 @@ router.include_router(alerts_router)
 router.include_router(dify_router)
 router.include_router(sso_router)
 router.include_router(skill_store_router)
+router.include_router(storage_router)
 
 
 def create_agent_scoped_router() -> APIRouter:

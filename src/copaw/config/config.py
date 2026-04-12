@@ -66,6 +66,7 @@ class EnterpriseConfig(BaseModel):
     )
     database: DatabaseConfig = Field(default_factory=DatabaseConfig)
     redis: RedisConfig = Field(default_factory=RedisConfig)
+    storage: "StorageConfig" = Field(default=None, description="Object storage configuration")
     audit_log_enabled: bool = Field(
         default=True,
         description="Write structured audit logs to PostgreSQL"
@@ -78,6 +79,17 @@ class EnterpriseConfig(BaseModel):
         default=False,
         description="Enable DAG workflow engine (requires enterprise=True)"
     )
+
+    def model_post_init(self, __context) -> None:
+        """Lazy-initialize storage config if not provided."""
+        if self.storage is None:
+            from ..storage.config import StorageConfig as _StorageConfig
+            self.storage = _StorageConfig()
+
+
+# Resolve forward reference for StorageConfig
+from ..storage.config import StorageConfig as _StorageConfigForRebuild
+EnterpriseConfig.model_rebuild(_types_namespace={"StorageConfig": _StorageConfigForRebuild})
 
 
 def generate_short_agent_id() -> str:

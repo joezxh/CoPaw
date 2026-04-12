@@ -40,7 +40,7 @@ import { clearAuthToken } from "../api/config";
 import { authApi } from "../api/modules/auth";
 import styles from "./index.module.less";
 import { useTheme } from "../contexts/ThemeContext";
-import { KEY_TO_PATH, DEFAULT_OPEN_KEYS } from "./constants";
+import { KEY_TO_PATH } from "./constants";
 
 // ── Layout ────────────────────────────────────────────────────────────────
 
@@ -63,7 +63,8 @@ export default function Sidebar({ selectedKey }: SidebarProps) {
   const [accountModalOpen, setAccountModalOpen] = useState(false);
   const [accountLoading, setAccountLoading] = useState(false);
   const [accountForm] = Form.useForm();
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(false); // 默认展开
+  const [openKeys, setOpenKeys] = useState<string[]>([]); // 子菜单默认全部关闭
 
   // ── Effects ──────────────────────────────────────────────────────────────
 
@@ -75,6 +76,21 @@ export default function Sidebar({ selectedKey }: SidebarProps) {
   }, []);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
+
+  // 处理子菜单展开/收起 - 同时只保持一个子菜单展开
+  const handleOpenChange = (keys: string[]) => {
+    // 使用函数式更新确保基于最新 state 计算，避免闭包陷阱
+    setOpenKeys((prev) => {
+      // 找出新增的展开项（在 keys 中但不在 prev 中的 key）
+      const latestOpenKey = keys.find((key) => !prev.includes(key));
+      if (latestOpenKey) {
+        // 展开了新的子菜单 → 手风琴模式：只保留新展开的
+        return [latestOpenKey];
+      }
+      // 没有新增项，说明是收起操作，直接使用新的 keys
+      return keys;
+    });
+  };
 
   const handleUpdateProfile = async (values: {
     currentPassword: string;
@@ -234,28 +250,59 @@ export default function Sidebar({ selectedKey }: SidebarProps) {
       path: "/voice-transcription",
       label: t("nav.voiceTranscription"),
     },
+    // Enterprise items
+    {
+      key: "enterprise-users",
+      icon: <SparkSearchUserLine size={18} />,
+      path: "/enterprise/users",
+      label: t("nav.enterpriseUsers", "User Management"),
+    },
+    {
+      key: "enterprise-permissions",
+      icon: <SparkModifyLine size={18} />,
+      path: "/enterprise/permissions",
+      label: t("nav.enterprisePermissions", "Permission Management"),
+    },
     {
       key: "user-groups",
       icon: <SparkUserGroupLine size={18} />,
-      path: "/user-groups",
+      path: "/enterprise/groups",
       label: t("nav.userGroups", "User Groups"),
+    },
+    {
+      key: "enterprise-workflows",
+      icon: <SparkMagicWandLine size={18} />,
+      path: "/enterprise/workflows",
+      label: t("nav.enterpriseWorkflows", "Workflows"),
+    },
+    {
+      key: "enterprise-tasks",
+      icon: <SparkDateLine size={18} />,
+      path: "/enterprise/tasks",
+      label: t("nav.enterpriseTasks", "Tasks"),
+    },
+    {
+      key: "enterprise-audit",
+      icon: <SparkBrowseLine size={18} />,
+      path: "/enterprise/audit",
+      label: t("nav.enterpriseAudit", "Audit Log"),
     },
     {
       key: "dlp-rules",
       icon: <SparkBrowseLine size={18} />,
-      path: "/dlp-rules",
+      path: "/enterprise/dlp-rules",
       label: t("nav.dlpRules", "DLP Rules"),
     },
     {
       key: "alert-rules",
       icon: <SparkWifiLine size={18} />,
-      path: "/alert-rules",
+      path: "/enterprise/alert-rules",
       label: t("nav.alertRules", "Security Alerts"),
     },
     {
       key: "dify-connectors",
       icon: <SparkDataLine size={18} />,
-      path: "/dify-connectors",
+      path: "/enterprise/dify-connectors",
       label: t("nav.difyConnectors", "Dify Connectors"),
     },
   ];
@@ -371,9 +418,34 @@ export default function Sidebar({ selectedKey }: SidebarProps) {
       label: collapsed ? null : t("nav.enterprise", "Enterprise"),
       children: [
         {
+          key: "enterprise-users",
+          label: collapsed ? null : t("nav.enterpriseUsers", "User Management"),
+          icon: <SparkSearchUserLine size={16} />,
+        },
+        {
+          key: "enterprise-permissions",
+          label: collapsed ? null : t("nav.enterprisePermissions", "Permission Management"),
+          icon: <SparkModifyLine size={16} />,
+        },
+        {
           key: "user-groups",
           label: collapsed ? null : t("nav.userGroups", "User Groups"),
           icon: <SparkUserGroupLine size={16} />,
+        },
+        {
+          key: "enterprise-workflows",
+          label: collapsed ? null : t("nav.enterpriseWorkflows", "Workflows"),
+          icon: <SparkMagicWandLine size={16} />,
+        },
+        {
+          key: "enterprise-tasks",
+          label: collapsed ? null : t("nav.enterpriseTasks", "Tasks"),
+          icon: <SparkDateLine size={16} />,
+        },
+        {
+          key: "enterprise-audit",
+          label: collapsed ? null : t("nav.enterpriseAudit", "Audit Log"),
+          icon: <SparkBrowseLine size={16} />,
         },
         {
           key: "dlp-rules",
@@ -437,7 +509,8 @@ export default function Sidebar({ selectedKey }: SidebarProps) {
         <Menu
           mode="inline"
           selectedKeys={[selectedKey]}
-          openKeys={DEFAULT_OPEN_KEYS}
+          openKeys={collapsed ? [] : openKeys}
+          onOpenChange={handleOpenChange}
           onClick={({ key }) => {
             const path = KEY_TO_PATH[String(key)];
             if (path) navigate(path);

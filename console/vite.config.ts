@@ -34,6 +34,15 @@ export default defineConfig(({ mode }) => {
     server: {
       host: "0.0.0.0",
       port: 5173,
+      // Proxy API requests to backend during development to avoid CORS issues
+      proxy: apiBaseUrl
+        ? {
+            "/api": {
+              target: apiBaseUrl,
+              changeOrigin: true,
+            },
+          }
+        : undefined,
     },
     optimizeDeps: {
       include: ["diff"],

@@ -145,7 +145,7 @@ PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH_ENV = "PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH"
 
 # When True, expose /docs, /redoc, /openapi.json
 # (dev only; keep False in prod).
-DOCS_ENABLED = EnvVarLoader.get_bool("COPAW_OPENAPI_DOCS", False)
+DOCS_ENABLED = EnvVarLoader.get_bool("COPAW_OPENAPI_DOCS", True)
 
 # Memory directory
 MEMORY_DIR = WORKING_DIR / "memory"

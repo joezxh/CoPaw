@@ -53,7 +53,14 @@
     "environments": "Environments",
     "security": "Security",
     "tokenUsage": "Token Usage",
-    "voiceTranscription": "Voice Transcription"
+    "voiceTranscription": "Voice Transcription",
+    "enterprise": "Enterprise",
+    "enterpriseUsers": "User Management",
+    "enterprisePermissions": "Permission Management",
+    "userGroups": "User Groups",
+    "enterpriseWorkflows": "Workflows",
+    "enterpriseTasks": "Tasks",
+    "enterpriseAudit": "Audit Log"
   },
   "voiceTranscription": {
     "title": "Voice Transcription",

@@ -19,14 +19,14 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    # 1. Modify users.mfa_secret to Text for AES-256-GCM encryption
-    op.alter_column('users', 'mfa_secret',
+    # 1. Modify sys_users.mfa_secret to Text for AES-256-GCM encryption
+    op.alter_column('sys_users', 'mfa_secret',
                existing_type=sa.VARCHAR(length=200),
                type_=sa.Text(),
                existing_nullable=True)
 
-    # 2. Create dlp_rules table
-    op.create_table('dlp_rules',
+    # 2. Create sys_dlp_rules table
+    op.create_table('sys_dlp_rules',
         sa.Column('rule_name', sa.String(length=100), nullable=False),
         sa.Column('description', sa.String(length=500), nullable=True),
         sa.Column('pattern_regex', sa.Text(), nullable=False),
@@ -40,8 +40,8 @@ def upgrade() -> None:
         sa.UniqueConstraint('rule_name')
     )
 
-    # 3. Create dlp_events table
-    op.create_table('dlp_events',
+    # 3. Create sys_dlp_events table
+    op.create_table('sys_dlp_events',
         sa.Column('rule_name', sa.String(length=100), nullable=False),
         sa.Column('action_taken', sa.String(length=20), nullable=False),
         sa.Column('content_summary', sa.Text(), nullable=True),
@@ -51,12 +51,12 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_dlp_events_rule_name'), 'dlp_events', ['rule_name'], unique=False)
-    op.create_index(op.f('ix_dlp_events_triggered_at'), 'dlp_events', ['triggered_at'], unique=False)
-    op.create_index(op.f('ix_dlp_events_user_id'), 'dlp_events', ['user_id'], unique=False)
+    op.create_index(op.f('ix_sys_dlp_events_rule_name'), 'sys_dlp_events', ['rule_name'], unique=False)
+    op.create_index(op.f('ix_sys_dlp_events_triggered_at'), 'sys_dlp_events', ['triggered_at'], unique=False)
+    op.create_index(op.f('ix_sys_dlp_events_user_id'), 'sys_dlp_events', ['user_id'], unique=False)
 
-    # 4. Create alert_rules table
-    op.create_table('alert_rules',
+    # 4. Create sys_alert_rules table
+    op.create_table('sys_alert_rules',
         sa.Column('rule_type', sa.String(length=50), nullable=False),
         sa.Column('description', sa.String(length=300), nullable=True),
         sa.Column('threshold', sa.Integer(), nullable=False),
@@ -67,10 +67,10 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_alert_rules_rule_type'), 'alert_rules', ['rule_type'], unique=True)
+    op.create_index(op.f('ix_sys_alert_rules_rule_type'), 'sys_alert_rules', ['rule_type'], unique=True)
 
-    # 5. Create alert_events table
-    op.create_table('alert_events',
+    # 5. Create sys_alert_events table
+    op.create_table('sys_alert_events',
         sa.Column('rule_type', sa.String(length=50), nullable=False),
         sa.Column('triggered_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
         sa.Column('context', postgresql.JSONB(astext_type=sa.Text()), nullable=True),
@@ -78,26 +78,41 @@ def upgrade() -> None:
         sa.Column('id', postgresql.UUID(as_uuid=True), nullable=False),
         sa.PrimaryKeyConstraint('id')
     )
-    op.create_index(op.f('ix_alert_events_rule_type'), 'alert_events', ['rule_type'], unique=False)
-    op.create_index(op.f('ix_alert_events_triggered_at'), 'alert_events', ['triggered_at'], unique=False)
+    op.create_index(op.f('ix_sys_alert_events_rule_type'), 'sys_alert_events', ['rule_type'], unique=False)
+    op.create_index(op.f('ix_sys_alert_events_triggered_at'), 'sys_alert_events', ['triggered_at'], unique=False)
+
+    # 6. Create ai_dify_connectors table
+    op.create_table('ai_dify_connectors',
+        sa.Column('id', sa.String(length=36), nullable=False),
+        sa.Column('name', sa.String(length=100), nullable=False),
+        sa.Column('description', sa.String(length=255), nullable=True),
+        sa.Column('api_url', sa.String(length=255), nullable=False),
+        sa.Column('api_key', sa.String(length=255), nullable=False),
+        sa.Column('is_active', sa.Boolean(), nullable=True),
+        sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=True),
+        sa.Column('updated_at', sa.DateTime(timezone=True), nullable=True),
+        sa.PrimaryKeyConstraint('id')
+    )
 
 
 def downgrade() -> None:
-    op.drop_index(op.f('ix_alert_events_triggered_at'), table_name='alert_events')
-    op.drop_index(op.f('ix_alert_events_rule_type'), table_name='alert_events')
-    op.drop_table('alert_events')
+    op.drop_index(op.f('ix_sys_alert_events_triggered_at'), table_name='sys_alert_events')
+    op.drop_index(op.f('ix_sys_alert_events_rule_type'), table_name='sys_alert_events')
+    op.drop_table('sys_alert_events')
 
-    op.drop_index(op.f('ix_alert_rules_rule_type'), table_name='alert_rules')
-    op.drop_table('alert_rules')
+    op.drop_index(op.f('ix_sys_alert_rules_rule_type'), table_name='sys_alert_rules')
+    op.drop_table('sys_alert_rules')
 
-    op.drop_index(op.f('ix_dlp_events_user_id'), table_name='dlp_events')
-    op.drop_index(op.f('ix_dlp_events_triggered_at'), table_name='dlp_events')
-    op.drop_index(op.f('ix_dlp_events_rule_name'), table_name='dlp_events')
-    op.drop_table('dlp_events')
+    op.drop_index(op.f('ix_sys_dlp_events_user_id'), table_name='sys_dlp_events')
+    op.drop_index(op.f('ix_sys_dlp_events_triggered_at'), table_name='sys_dlp_events')
+    op.drop_index(op.f('ix_sys_dlp_events_rule_name'), table_name='sys_dlp_events')
+    op.drop_table('sys_dlp_events')
 
-    op.drop_table('dlp_rules')
+    op.drop_table('sys_dlp_rules')
 
-    op.alter_column('users', 'mfa_secret',
+    op.drop_table('ai_dify_connectors')
+
+    op.alter_column('sys_users', 'mfa_secret',
                existing_type=sa.Text(),
                type_=sa.VARCHAR(length=200),
                existing_nullable=True)

@@ -1,4 +1,4 @@
-import { getApiUrl, clearAuthToken } from "./config";
+import { getApiUrl, clearAuthToken, isAuthDisabled } from "./config";
 import { buildAuthHeaders } from "./authHeaders";
 
 function getErrorMessageFromBody(
@@ -57,7 +57,7 @@ function buildHeaders(method?: string, extra?: HeadersInit): Headers {
   return headers;
 }
 
-export async function request<T = unknown>(
+async function baseRequest<T = unknown>(
   path: string,
   options: RequestInit = {},
 ): Promise<T> {
@@ -73,7 +73,9 @@ export async function request<T = unknown>(
   if (!response.ok) {
     if (response.status === 401) {
       clearAuthToken();
-      if (window.location.pathname !== "/login") {
+      // Only redirect to login when auth is enabled
+      // When auth is disabled, 401 just means the endpoint requires auth but the app doesn't
+      if (!isAuthDisabled() && window.location.pathname !== "/login") {
         window.location.href = "/login";
       }
       throw new Error("Not authenticated");
@@ -102,3 +104,32 @@ export async function request<T = unknown>(
 
   return (await response.json()) as T;
 }
+
+export const request = Object.assign(baseRequest, {
+  get: <T = unknown>(path: string, options?: RequestInit) =>
+    baseRequest<T>(path, { ...options, method: "GET" }),
+  
+  post: <T = unknown>(path: string, data?: unknown, options?: RequestInit) =>
+    baseRequest<T>(path, {
+      ...options,
+      method: "POST",
+      body: data ? JSON.stringify(data) : undefined,
+    }),
+  
+  put: <T = unknown>(path: string, data?: unknown, options?: RequestInit) =>
+    baseRequest<T>(path, {
+      ...options,
+      method: "PUT",
+      body: data ? JSON.stringify(data) : undefined,
+    }),
+  
+  delete: <T = unknown>(path: string, options?: RequestInit) =>
+    baseRequest<T>(path, { ...options, method: "DELETE" }),
+  
+  patch: <T = unknown>(path: string, data?: unknown, options?: RequestInit) =>
+    baseRequest<T>(path, {
+      ...options,
+      method: "PATCH",
+      body: data ? JSON.stringify(data) : undefined,
+    }),
+});

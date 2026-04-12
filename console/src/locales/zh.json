@@ -53,7 +53,14 @@
     "environments": "环境变量",
     "security": "安全",
     "tokenUsage": "Token 消耗",
-    "voiceTranscription": "语音转写"
+    "voiceTranscription": "语音转写",
+    "enterprise": "企业",
+    "enterpriseUsers": "用户管理",
+    "enterprisePermissions": "权限管理",
+    "userGroups": "用户组",
+    "enterpriseWorkflows": "工作流",
+    "enterpriseTasks": "任务管理",
+    "enterpriseAudit": "审计日志"
   },
   "workspace": {
     "title": "文件",

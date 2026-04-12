@@ -4,7 +4,8 @@ from sqlalchemy import select
 from typing import List
 from pydantic import BaseModel
 
-from ..dependencies import get_db, require_admin
+from ...db.postgresql import get_db_session
+from ...enterprise.middleware import get_current_user
 from ...db.models.dify import DifyConnector
 from ...enterprise.dify_client import DifyClient
 
@@ -31,16 +32,15 @@ class DifyConnectorResponse(BaseModel):
     api_url: str
     is_active: bool
     
-    class Config:
-        orm_mode = True
+    model_config = {"from_attributes": True}
 
 @router.get("/connectors", response_model=List[DifyConnectorResponse])
-async def list_connectors(db: AsyncSession = Depends(get_db)):
+async def list_connectors(db: AsyncSession = Depends(get_db_session)):
     result = await db.execute(select(DifyConnector).order_by(DifyConnector.created_at.desc()))
     return result.scalars().all()
 
 @router.post("/connectors", response_model=DifyConnectorResponse)
-async def create_connector(data: DifyConnectorCreate, db: AsyncSession = Depends(get_db)):
+async def create_connector(data: DifyConnectorCreate, db: AsyncSession = Depends(get_db_session), current_user: dict = Depends(get_current_user)):
     try:
         # Validate connection before saving
         client = DifyClient(data.api_url, data.api_key)
@@ -55,14 +55,16 @@ async def create_connector(data: DifyConnectorCreate, db: AsyncSession = Depends
     await db.refresh(connector)
     return connector
 
+
 @router.put("/connectors/{connector_id}", response_model=DifyConnectorResponse)
-async def update_connector(connector_id: str, data: DifyConnectorUpdate, db: AsyncSession = Depends(get_db)):
+async def update_connector(connector_id: str, data: DifyConnectorUpdate, db: AsyncSession = Depends(get_db_session),
+                           current_user: dict = Depends(get_current_user)):
     connector = await db.get(DifyConnector, connector_id)
     if not connector:
         raise HTTPException(status_code=404, detail="Connector not found")
-        
+
     update_data = data.dict(exclude_unset=True)
-    
+
     # If API details are updated, we should validate again
     if "api_url" in update_data or "api_key" in update_data:
         test_url = update_data.get("api_url", connector.api_url)
@@ -75,17 +77,19 @@ async def update_connector(connector_id: str, data: DifyConnectorUpdate, db: Asy
 
     for key, value in update_data.items():
         setattr(connector, key, value)
-        
+
     await db.commit()
     await db.refresh(connector)
     return connector
 
+
 @router.delete("/connectors/{connector_id}")
-async def delete_connector(connector_id: str, db: AsyncSession = Depends(get_db)):
+async def delete_connector(connector_id: str, db: AsyncSession = Depends(get_db_session),
+                           current_user: dict = Depends(get_current_user)):
     connector = await db.get(DifyConnector, connector_id)
     if not connector:
         raise HTTPException(status_code=404, detail="Connector not found")
-        
+
     await db.delete(connector)
     await db.commit()
     return {"detail": "Connector deleted successfully"}
@@ -96,8 +100,9 @@ class DifyWebhookPayload(BaseModel):
     event: str  # e.g. "workflow_finished", "workflow_failed", "message_end"
     data: dict
 
+
 @router.post("/webhook")
-async def dify_webhook_callback(payload: DifyWebhookPayload, db: AsyncSession = Depends(get_db)):
+async def dify_webhook_callback(payload: DifyWebhookPayload, db: AsyncSession = Depends(get_db_session)):
     """
     Callback endpoint for Dify workflow execution status updates.
     Dify will send POST requests here when workflows complete or fail.
@@ -105,11 +110,11 @@ async def dify_webhook_callback(payload: DifyWebhookPayload, db: AsyncSession = 
     # Here we would typically:
     # 1. Update the local WorkflowExecution record status based on payload.task_id
     # 2. Trigger a notification back to the CoPaw Agent or User (e.g. via WebSocket or Msg injection)
-    
+
     # Example logic (placeholder for actual Task/Workflow integration):
     # execution = await db.execute(select(WorkflowExecution).where(WorkflowExecution.dify_task_id == payload.task_id))
     # ... update status ...
-    
+
     print(f"[DIFY WEBHOOK] Task {payload.task_id} Event {payload.event} Data: {payload.data}")
     return {"status": "ok"}
 
@@ -118,16 +123,18 @@ class DifyRunPayload(BaseModel):
     inputs: dict
     user: str
 
+
 @router.post("/run")
-async def run_dify_workflow(payload: DifyRunPayload, db: AsyncSession = Depends(get_db)):
+async def run_dify_workflow(payload: DifyRunPayload, db: AsyncSession = Depends(get_db_session),
+                            current_user: dict = Depends(get_current_user)):
     """
-    Run a Dify workflow via a specific connector. 
+    Run a Dify workflow via a specific connector.
     Usually called by the dify_workflow CoPaw Skill via CLI.
     """
     connector = await db.get(DifyConnector, payload.connector_id)
     if not connector or not connector.is_active:
         raise HTTPException(status_code=404, detail="Active Dify Connector not found")
-        
+
     client = DifyClient(connector.api_url, connector.api_key)
     try:
         # We use blocking here for simplicity in the CLI tool. 

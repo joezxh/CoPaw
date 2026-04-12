@@ -152,7 +152,7 @@ const DifyConnectors: React.FC = () => {
       <Table
         rowKey="id"
         columns={columns}
-        dataSource={list}
+        dataSource={list as DifyConnector[] | undefined}
         loading={loading}
         pagination={{ hideOnSinglePage: true }}
       />

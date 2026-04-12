@@ -36,10 +36,16 @@ export const KEY_TO_PATH: Record<string, string> = {
   security: "/security",
   "token-usage": "/token-usage",
   "voice-transcription": "/voice-transcription",
-  "user-groups": "/user-groups",
-  "dlp-rules": "/dlp-rules",
-  "alert-rules": "/alert-rules",
-  "dify-connectors": "/dify-connectors",
+  // Enterprise
+  "enterprise-users": "/enterprise/users",
+  "enterprise-permissions": "/enterprise/permissions",
+  "user-groups": "/enterprise/groups",
+  "enterprise-workflows": "/enterprise/workflows",
+  "enterprise-tasks": "/enterprise/tasks",
+  "enterprise-audit": "/enterprise/audit",
+  "dlp-rules": "/enterprise/dlp-rules",
+  "alert-rules": "/enterprise/alert-rules",
+  "dify-connectors": "/enterprise/dify-connectors",
 };
 
 export const KEY_TO_LABEL: Record<string, string> = {

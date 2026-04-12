@@ -21,9 +21,9 @@ from ...db.postgresql import get_db_session
 from ...enterprise.auth_service import AuthService
 from ...enterprise.audit_service import AuditService, AuditAction
 from ...enterprise.middleware import get_current_user
-from ...enterprise.alert_service import check_login_anomaly
+from ...enterprise.alert_service import AlertService
 
-router = APIRouter(prefix="/api/enterprise/auth", tags=["enterprise-auth"])
+router = APIRouter(prefix="/enterprise/auth", tags=["enterprise-auth"])
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
@@ -108,7 +108,16 @@ async def login(body: LoginRequest, request: Request):
                 client_ip=client_ip,
                 context={"reason": str(exc)},
             )
-            await check_login_anomaly(body.username, client_ip)
+            # Call AlertService.check_login_anomaly with correct signature
+            from ...db.redis_client import get_redis
+            redis = await get_redis()
+            await AlertService.check_login_anomaly(
+                session,
+                username=body.username,
+                ip=client_ip,
+                failed=True,
+                redis=redis,
+            )
             raise HTTPException(status_code=401, detail=str(exc))
 
 @router.post("/register", status_code=201)

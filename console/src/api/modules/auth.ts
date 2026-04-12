@@ -9,6 +9,7 @@ export interface LoginResponse {
 export interface AuthStatusResponse {
   enabled: boolean;
   has_users: boolean;
+  is_enterprise: boolean;
 }
 
 export const authApi = {

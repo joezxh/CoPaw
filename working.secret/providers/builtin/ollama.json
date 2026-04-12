@@ -1,0 +1,84 @@
+{
+  "id": "ollama",
+  "name": "Ollama",
+  "base_url": "http://127.0.0.1:11434",
+  "api_key": "",
+  "chat_model": "OpenAIChatModel",
+  "models": [],
+  "extra_models": [
+    {
+      "id": "qwen3:0.6b",
+      "name": "qwen3:0.6b",
+      "supports_multimodal": null,
+      "supports_image": null,
+      "supports_video": null,
+      "probe_source": null,
+      "generate_kwargs": {}
+    },
+    {
+      "id": "qllama/bge-reranker-v2-m3:f16",
+      "name": "qllama/bge-reranker-v2-m3:f16",
+      "supports_multimodal": null,
+      "supports_image": null,
+      "supports_video": null,
+      "probe_source": null,
+      "generate_kwargs": {}
+    },
+    {
+      "id": "dengcao/Qwen3-Reranker-4B:Q8_0",
+      "name": "dengcao/Qwen3-Reranker-4B:Q8_0",
+      "supports_multimodal": null,
+      "supports_image": null,
+      "supports_video": null,
+      "probe_source": null,
+      "generate_kwargs": {}
+    },
+    {
+      "id": "qwen2.5vl:7b",
+      "name": "qwen2.5vl:7b",
+      "supports_multimodal": null,
+      "supports_image": null,
+      "supports_video": null,
+      "probe_source": null,
+      "generate_kwargs": {}
+    },
+    {
+      "id": "qwen3:8b",
+      "name": "qwen3:8b",
+      "supports_multimodal": null,
+      "supports_image": null,
+      "supports_video": null,
+      "probe_source": null,
+      "generate_kwargs": {}
+    },
+    {
+      "id": "gemma3:4b",
+      "name": "gemma3:4b",
+      "supports_multimodal": null,
+      "supports_image": null,
+      "supports_video": null,
+      "probe_source": null,
+      "generate_kwargs": {}
+    },
+    {
+      "id": "embeddinggemma:300m",
+      "name": "embeddinggemma:300m",
+      "supports_multimodal": null,
+      "supports_image": null,
+      "supports_video": null,
+      "probe_source": null,
+      "generate_kwargs": {}
+    }
+  ],
+  "api_key_prefix": "",
+  "is_local": true,
+  "freeze_url": false,
+  "require_api_key": false,
+  "is_custom": false,
+  "support_model_discovery": true,
+  "support_connection_check": true,
+  "generate_kwargs": {
+    "max_tokens": null
+  },
+  "meta": {}
+}

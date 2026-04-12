@@ -9,7 +9,6 @@ import {
   deleteRule,
   getEvents,
   DLPRule,
-  DLPEvent,
 } from "../../../api/modules/enterprise-dlp";
 
 const { Option } = Select;

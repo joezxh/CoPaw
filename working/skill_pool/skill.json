@@ -1,0 +1,370 @@
+{
+  "schema_version": "skill-pool-manifest.v1",
+  "version": 1775909550954,
+  "skills": {
+    "browser_cdp": {
+      "name": "browser_cdp",
+      "description": "当用户明确希望连接到已运行的 Chrome 浏览器（connect_cdp）、扫描本地 CDP 端口、或以暴露 CDP 端口的方式启动浏览器（start + cdp_port）时，使用本 skill。用户没有明确提到 CDP、共享浏览器或远程调试时，启动浏览器不得携带 cdp_port，也不得使用 connect_cdp。CDP 模式会暴露浏览器历史、Cookies 等敏感信息，使用前须告知用户；同一 workspace 同时只能运行或连接一个浏览器。",
+      "version_text": "1.1",
+      "commit_text": "",
+      "signature": "babdc31b8b9fc79af90010d2fc92e09ab9a8c2f98759f0def1660fc7ee591223",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.310873Z"
+    },
+    "browser_visible": {
+      "name": "browser_visible",
+      "description": "当用户希望打开真实可见的浏览器窗口（而非后台无头模式）时，使用 browser_use 的 headed 参数启动浏览器，随后可正常 open/snapshot/click 等。适用于用户想亲眼看到页面、演示或调试场景。",
+      "version_text": "1.1",
+      "commit_text": "",
+      "signature": "1e281c852caa91a264f0facb1ab6f1fb7fef21f3d83ccf61938db96920bca1e2",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.311879Z"
+    },
+    "channel_message": {
+      "name": "channel_message",
+      "description": "Use this skill to proactively send a one-way message to a user/session/channel, usually only when the user explicitly asks to send to a channel/session or when proactive notification is needed. First query sessions with copaw chats list, then push with copaw channels send. | 当需要主动向用户/会话/频道单向推送消息时使用，通常仅在用户明确要求发往某个 channel / 会话，或需要主动通知时使用；先用 copaw chats list 查 session，再用 copaw channels send 推送",
+      "version_text": "1.1",
+      "commit_text": "",
+      "signature": "458963ed0f2ef5223feee67837338ab36a4cec46bded5154f23586d30baa277d",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.312600Z"
+    },
+    "copaw_source_index": {
+      "name": "copaw_source_index",
+      "description": "将用户问题中的主题、关键词映射到 CoPaw 官方文档路径与常见源码入口，减少盲目搜索。适用于内置 QA Agent 在回答安装、配置、技能、MCP、多智能体、记忆、CLI 等问题时快速选定要读的文件。",
+      "version_text": "1.1",
+      "commit_text": "",
+      "signature": "b7963d489cefb6367f353a283108735f33fea15abae95a7b6e232db10ff377f8",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.313610Z"
+    },
+    "crm_sync": {
+      "name": "crm_sync",
+      "description": "Automated lead capture and synchronization with CRM systems (e.g., Salesforce).",
+      "version_text": "1.0.0",
+      "commit_text": "",
+      "signature": "7a7196403f6bc6ccdecc0dc0c816b6a775037c61fa093a65b631431802d25cd2",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T09:10:15.546344Z"
+    },
+    "cron": {
+      "name": "cron",
+      "description": "Use this skill only for scheduled or recurring tasks. Manage cron jobs with copaw cron list/create/get/state/pause/resume/delete/run. Always pass --agent-id explicitly. | 仅在需要未来定时执行或周期执行时使用本 skill。用 copaw cron list/create/get/state/pause/resume/delete/run 管理任务；必须显式传 --agent-id",
+      "version_text": "1.2",
+      "commit_text": "",
+      "signature": "56bbac8faee59be2c3620a0e50583f3dcd355b972d749141cc7d984944737939",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.314608Z"
+    },
+    "dify_workflow": {
+      "name": "dify_workflow",
+      "description": "Use this skill to execute complex enterprise workflows running on Dify (e.g. data analysis, report generation, multi-step approval). You must obtain the connector ID and required inputs first. | 使用此技能来执行在 Dify 上运行的企业级复杂工作流（例如数据分析、报告生成、多步审批等）。必须先获取指定的 connector ID 和所需的输入变量。",
+      "version_text": "1.0",
+      "commit_text": "",
+      "signature": "be61fd9f0629526ccf7f899a8fba34951bdbc5c6bc7710c845d5033e2745e6d4",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T08:36:28.688954Z"
+    },
+    "dingtalk_channel": {
+      "name": "dingtalk_channel",
+      "description": "使用可视浏览器自动完成 CoPaw 的钉钉频道接入。适用于用户提到钉钉、DingTalk、开发者后台、Client ID、Client Secret、机器人、Stream 模式、绑定或配置 channel 的场景；支持遇到登录页时暂停，等待用户登录后继续。",
+      "version_text": "1.1",
+      "commit_text": "",
+      "signature": "cd5e6d8eb26bd4fc8bd0469bc8483ca5cea82191c84a16105a0da68ea059a268",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.315608Z"
+    },
+    "docx": {
+      "name": "docx",
+      "description": "Use this skill whenever the user wants to create, read, edit, or manipulate Word documents (.docx files). Triggers include: any mention of \"Word doc\", \"word document\", \".docx\", or requests to produce professional documents with formatting like tables of contents, headings, page numbers, or letterheads. Also use when extracting or reorganizing content from .docx files, inserting or replacing images in documents, performing find-and-replace in Word files, working with tracked changes or comments, or converting content into a polished Word document. If the user asks for a \"report\", \"memo\", \"letter\", \"template\", or similar deliverable as a Word or .docx file, use this skill. Do NOT use for PDFs, spreadsheets, Google Docs, or general coding tasks unrelated to document generation.",
+      "version_text": "1.1",
+      "commit_text": "",
+      "signature": "2e1e8d9b77e80bd6c020962e19a9114d738b9796aac987b4f54a009995a8fe10",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.317196Z"
+    },
+    "expense_approval": {
+      "name": "expense_approval",
+      "description": "Streamlined workflow for submitting and approving expense claims.",
+      "version_text": "1.0.0",
+      "commit_text": "",
+      "signature": "f4705a24a7bce0a010eb47e0fa6a8aec1ea901ab21dd9d95d68a44fa351a3cbe",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T09:10:03.666249Z"
+    },
+    "file_reader": {
+      "name": "file_reader",
+      "description": "Read and summarize text-based file types only. Prefer read_file for text formats; use execute_shell_command for type detection when needed. PDF/Office/images/archives are handled by other skills.",
+      "version_text": "1.1",
+      "commit_text": "",
+      "signature": "44bef14079eee63cca9a95598c5959fe1513d6e09b0cf19a2b4e5f82c77997e4",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.364342Z"
+    },
+    "guidance": {
+      "name": "guidance",
+      "description": "回答用户关于 CoPaw 安装与配置的问题：优先定位并阅读本地文档，再提炼答案；若本地信息不足，兜底访问官网文档。",
+      "version_text": "1.1",
+      "commit_text": "",
+      "signature": "8cff61fed127b1f2f4c6fc5ee399bcf083e3ed122d80a6736c426656619f3822",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.365452Z"
+    },
+    "himalaya": {
+      "name": "himalaya",
+      "description": "CLI to manage emails via IMAP/SMTP. Use `himalaya` to list, read, write, reply, forward, search, and organize emails from the terminal. Supports multiple accounts and message composition with MML (MIME Meta Language).",
+      "version_text": "1.2",
+      "commit_text": "",
+      "signature": "44c6c8ce130cb29de8304753a728a82f3abf257a44d48b6b34215cf8b79cc277",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [
+          "himalaya"
+        ],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.366221Z"
+    },
+    "hr_onboarding": {
+      "name": "hr_onboarding",
+      "description": "Automated onboarding checklist and knowledge retrieval for new hires.",
+      "version_text": "1.0.0",
+      "commit_text": "",
+      "signature": "08fe51e3b5d773e6d34a723598b677d535bc4efeba04b24707b85747dfdb5e35",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T09:09:57.148839Z"
+    },
+    "invoice_ocr": {
+      "name": "invoice_ocr",
+      "description": "Extracts structured data from invoice images/PDFs.",
+      "version_text": "1.0.0",
+      "commit_text": "",
+      "signature": "1272a4dc636549a25ce576ca1006e0f324e4583e40e8e1fa461e26e8da51e880",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T09:10:09.705506Z"
+    },
+    "it_support_ticketing": {
+      "name": "it_support_ticketing",
+      "description": "Standardized interface for creating and tracking IT support tickets.",
+      "version_text": "1.0.0",
+      "commit_text": "",
+      "signature": "22fdd0771738cc411260ae33dbec3ce5edc6f9d035d517e47c60559a141d01c1",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T09:06:50.345977Z"
+    },
+    "meeting_assistant": {
+      "name": "meeting_assistant",
+      "description": "Context-aware meeting summarization and action item tracking.",
+      "version_text": "1.0.0",
+      "commit_text": "",
+      "signature": "f48788b74160d6ddf5ad39852b96c6f82852d4f715a3c1ff526d0458e5402a19",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T09:06:37.350058Z"
+    },
+    "multi_agent_collaboration": {
+      "name": "multi_agent_collaboration",
+      "description": "Use this skill when another agent's expertise/context is needed, or when the user explicitly asks to involve another agent. First list agents, then use copaw agents chat for two-way communication with replies. | 当需要其他 agent 的专长/上下文，或用户明确要求调用其他 agent 时使用；先查 agent，再用 copaw agents chat 双向通信（有回复）",
+      "version_text": "1.2",
+      "commit_text": "",
+      "signature": "5b913d82de75009a2894264e96263640e6b6138da70ad5786ff446806c6fdbda",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.368302Z"
+    },
+    "news": {
+      "name": "news",
+      "description": "Look up the latest news for the user from specified news sites. Provides authoritative URLs for politics, finance, society, world, tech, sports, and entertainment. Use browser_use to open each URL and snapshot to get content, then summarize for the user.",
+      "version_text": "1.1",
+      "commit_text": "",
+      "signature": "aaf6792267860404441c923f0cc899817966a146511694c51aa91d1d6e088bd6",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.370307Z"
+    },
+    "password_reset_helper": {
+      "name": "password_reset_helper",
+      "description": "Guided self-service for enterprise account recovery.",
+      "version_text": "1.0.0",
+      "commit_text": "",
+      "signature": "c992295f88da21ab000d890cdaa1e03b47d29f8abfbfe0d0cb64da7e08244c52",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T09:09:51.359996Z"
+    },
+    "pdf": {
+      "name": "pdf",
+      "description": "Use this skill whenever the user wants to do anything with PDF files. This includes reading or extracting text/tables from PDFs, combining or merging multiple PDFs into one, splitting PDFs apart, rotating pages, adding watermarks, creating new PDFs, filling PDF forms, encrypting/decrypting PDFs, extracting images, and OCR on scanned PDFs to make them searchable. If the user mentions a .pdf file or asks to produce one, use this skill.",
+      "version_text": "1.1",
+      "commit_text": "",
+      "signature": "f4cb6cd504a4e11e371715b5b0ed0228f27b019136d07a6172c45ee0a466c721",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.371066Z"
+    },
+    "pptx": {
+      "name": "pptx",
+      "description": "Use this skill any time a .pptx file is involved in any way — as input, output, or both. This includes: creating slide decks, pitch decks, or presentations; reading, parsing, or extracting text from any .pptx file (even if the extracted content will be used elsewhere, like in an email or summary); editing, modifying, or updating existing presentations; combining or splitting slide files; working with templates, layouts, speaker notes, or comments. Trigger whenever the user mentions \"deck,\" \"slides,\" \"presentation,\" or references a .pptx filename, regardless of what they plan to do with the content afterward. If a .pptx file needs to be opened, created, or touched, use this skill.",
+      "version_text": "1.1",
+      "commit_text": "",
+      "signature": "d6e4768ff94cd10a91e0761ce1b8c9f2a9eb026db0bf9c9d98fee80f93b6d49e",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.381952Z"
+    },
+    "report_generator": {
+      "name": "report_generator",
+      "description": "Generates structured weekly/monthly reports from enterprise data.",
+      "version_text": "1.0.0",
+      "commit_text": "",
+      "signature": "21e7ec40eb18a3a25f4dd74723659afe30b8b7fc3fae47bdd93359e094c18076",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T09:06:44.274922Z"
+    },
+    "xlsx": {
+      "name": "xlsx",
+      "description": "Use this skill any time a spreadsheet file is the primary input or output. This means any task where the user wants to: open, read, edit, or fix an existing .xlsx, .xlsm, .csv, or .tsv file (e.g., adding columns, computing formulas, formatting, charting, cleaning messy data); create a new spreadsheet from scratch or from other data sources; or convert between tabular file formats. Trigger especially when the user references a spreadsheet file by name or path — even casually (like \"the xlsx in my downloads\") — and wants something done to it or produced from it. Also trigger for cleaning or restructuring messy tabular data files (malformed rows, misplaced headers, junk data) into proper spreadsheets. The deliverable must be a spreadsheet file. Do NOT trigger when the primary deliverable is a Word document, HTML report, standalone Python script, database pipeline, or Google Sheets API integration, even if tabular data is involved.",
+      "version_text": "1.1",
+      "commit_text": "",
+      "signature": "f055a2bded5d1ac4fe1699b0132b7769cfc18728b5b16306fd84c8c76cf3e1b3",
+      "source": "builtin",
+      "protected": false,
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.427082Z"
+    }
+  },
+  "builtin_skill_names": [
+    "browser_cdp",
+    "browser_visible",
+    "channel_message",
+    "copaw_source_index",
+    "crm_sync",
+    "cron",
+    "dify_workflow",
+    "dingtalk_channel",
+    "docx",
+    "expense_approval",
+    "file_reader",
+    "guidance",
+    "himalaya",
+    "hr_onboarding",
+    "invoice_ocr",
+    "it_support_ticketing",
+    "meeting_assistant",
+    "multi_agent_collaboration",
+    "news",
+    "password_reset_helper",
+    "pdf",
+    "pptx",
+    "report_generator",
+    "xlsx"
+  ]
+}

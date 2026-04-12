@@ -33,7 +33,9 @@ export function useAgents(): UseAgentsReturn {
     setError(null);
     try {
       const data = await agentsApi.listAgents();
-      setAgentsState(data.agents);
+      // Defensive check: ensure data.agents is an array
+      const agentsList = Array.isArray(data?.agents) ? data.agents : [];
+      setAgentsState(agentsList);
     } catch (err) {
       console.error("Failed to load agents:", err);
       const errorMsg =

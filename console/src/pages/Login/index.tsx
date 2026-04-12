@@ -1,11 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Button, Form, Input } from "antd";
 import { useAppMessage } from "../../hooks/useAppMessage";
 import { LockOutlined, UserOutlined } from "@ant-design/icons";
 import { authApi } from "../../api/modules/auth";
-import { setAuthToken } from "../../api/config";
+import { enterpriseAuthApi } from "../../api/modules/enterprise-auth";
+import { setAuthToken, setAuthDisabled } from "../../api/config";
 import { useTheme } from "../../contexts/ThemeContext";
 
 export default function LoginPage() {
@@ -16,22 +17,43 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [isRegister, setIsRegister] = useState(false);
   const [hasUsers, setHasUsers] = useState(true);
+  const [isEnterprise, setIsEnterprise] = useState(false);
   const { message } = useAppMessage();
+  const hasCheckedAuth = useRef(false);
 
   useEffect(() => {
+    // Prevent duplicate execution (useRef persists across re-renders but not remounts)
+    if (hasCheckedAuth.current) {
+      return;
+    }
+    hasCheckedAuth.current = true;
+    
+    // Try to detect auth mode by checking /api/auth/status
     authApi
       .getStatus()
       .then((res) => {
         if (!res.enabled) {
+          // Auth disabled - set global flag and navigate to chat
+          setAuthDisabled(true);
           navigate("/chat", { replace: true });
           return;
         }
+        
+        // Auth is enabled
+        setAuthDisabled(false);
+        setIsEnterprise(res.is_enterprise || false);
+        
+        // Auth is enabled, check if there are users
         setHasUsers(res.has_users);
         if (!res.has_users) {
           setIsRegister(true);
         }
       })
-      .catch(() => {});
+      .catch(() => {
+        // If /api/auth/status fails, default to showing login form
+        setHasUsers(true);
+        setIsRegister(false);
+      });
   }, [navigate]);
 
   const onFinish = async (values: { username: string; password: string }) => {
@@ -42,29 +64,51 @@ export default function LoginPage() {
         raw.startsWith("/") && !raw.startsWith("//") ? raw : "/chat";
 
       if (isRegister) {
-        const res = await authApi.register(values.username, values.password);
-        if (res.token) {
-          setAuthToken(res.token);
+        if (isEnterprise) {
+          await enterpriseAuthApi.register({
+            username: values.username,
+            password: values.password,
+          });
           message.success(t("login.registerSuccess"));
-          navigate(redirect, { replace: true });
-        }
-      } else {
-        const res = await authApi.login(values.username, values.password);
-        if (res.token) {
-          setAuthToken(res.token);
+          // After registration, auto-login
+          const loginRes = await enterpriseAuthApi.login({
+            username: values.username,
+            password: values.password,
+          });
+          setAuthToken(loginRes.access_token);
           navigate(redirect, { replace: true });
         } else {
-          message.info(t("login.authNotEnabled"));
+          const res = await authApi.register(values.username, values.password);
+          if (res.token) {
+            setAuthToken(res.token);
+            message.success(t("login.registerSuccess"));
+            navigate(redirect, { replace: true });
+          }
+        }
+      } else {
+        if (isEnterprise) {
+          const res = await enterpriseAuthApi.login({
+            username: values.username,
+            password: values.password,
+          });
+          setAuthToken(res.access_token);
           navigate(redirect, { replace: true });
+        } else {
+          const res = await authApi.login(values.username, values.password);
+          if (res.token) {
+            setAuthToken(res.token);
+            navigate(redirect, { replace: true });
+          } else {
+            message.info(t("login.authNotEnabled"));
+            navigate(redirect, { replace: true });
+          }
         }
       }
-    } catch (err) {
+    } catch (err: any) {
       message.error(
         isRegister
-          ? err instanceof Error
-            ? err.message
-            : t("login.registerFailed")
-          : t("login.failed"),
+          ? err?.message || err?.detail || t("login.registerFailed")
+          : err?.message || err?.detail || t("login.failed"),
       );
     } finally {
       setLoading(false);
@@ -123,6 +167,7 @@ export default function LoginPage() {
           onFinish={onFinish}
           autoComplete="off"
           size="large"
+          initialValues={{ username: "admin" }}
         >
           <Form.Item
             name="username"
@@ -154,6 +199,7 @@ export default function LoginPage() {
                 />
               }
               placeholder={t("login.passwordPlaceholder")}
+              autoComplete="new-password"
             />
           </Form.Item>
 
@@ -167,6 +213,18 @@ export default function LoginPage() {
             >
               {isRegister ? t("login.register") : t("login.submit")}
             </Button>
+          </Form.Item>
+          
+          {/* Toggle between login and register */}
+          <Form.Item style={{ marginBottom: 0, marginTop: 16, textAlign: "center" }}>
+            <a
+              onClick={() => setIsRegister(!isRegister)}
+              style={{ color: "#1677ff", cursor: "pointer" }}
+            >
+              {isRegister
+                ? t("login.alreadyHaveAccount") || "Already have an account? Login"
+                : t("login.noAccount") || "No account? Register first"}
+            </a>
           </Form.Item>
         </Form>
       </div>

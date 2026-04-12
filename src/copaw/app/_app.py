@@ -202,6 +202,27 @@ async def lifespan(
         app.state.redis = _redis_manager
 
         logger.info("✓ Enterprise infrastructure connected (PostgreSQL + Redis)")
+
+        # Initialize object storage provider
+        try:
+            from ..storage import create_storage_provider
+            _storage_cfg = getattr(_cfg.enterprise, "storage", None)
+            if _storage_cfg is None:
+                from ..storage.config import StorageConfig as _StorageConfig
+                _storage_cfg = _StorageConfig()
+            _storage_provider = create_storage_provider(_storage_cfg)
+            await _storage_provider.initialize()
+            app.state.storage = _storage_provider
+            logger.info(
+                "✓ Object storage initialized (backend=%s)",
+                _storage_cfg.backend,
+            )
+        except Exception as _storage_exc:
+            logger.warning(
+                "Object storage initialization failed (non-fatal): %s",
+                _storage_exc,
+            )
+            app.state.storage = None
     else:
         logger.info("Enterprise mode disabled — running in single-user mode")
         app.state.db = None
@@ -469,6 +490,14 @@ async def lifespan(
                 logger.info("Redis connection pool closed")
             except Exception as exc:
                 logger.error("Error closing Redis pool: %s", exc)
+
+        _storage = getattr(app.state, "storage", None)
+        if _storage is not None:
+            try:
+                await _storage.close()
+                logger.info("Object storage provider closed")
+            except Exception as exc:
+                logger.error("Error closing object storage: %s", exc)
 
 
 

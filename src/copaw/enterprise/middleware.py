@@ -43,7 +43,6 @@ _PUBLIC_PREFIXES: tuple[str, ...] = (
     "/assets/",
     "/logo.png",
     "/copaw-symbol.svg",
-    "/api/enterprise/auth/",   # all auth sub-paths (register, login, refresh)
 )
 
 
@@ -99,8 +98,6 @@ class EnterpriseAuthMiddleware(BaseHTTPMiddleware):
         request.state.username = payload.get("username")
         request.state.roles = payload.get("roles", [])
         request.state.jti = payload.get("jti")
-        request.state.username = payload.get("sub", "")
-        request.state.jti = payload.get("jti", "")
         # Tenant extraction (from JWT or header, default to "default-tenant")
         request.state.tenant_id = request.headers.get("X-Tenant-Id", payload.get("tenant_id", "default-tenant"))
 

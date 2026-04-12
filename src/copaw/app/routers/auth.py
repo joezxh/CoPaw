@@ -37,6 +37,7 @@ class RegisterRequest(BaseModel):
 class AuthStatusResponse(BaseModel):
     enabled: bool
     has_users: bool
+    is_enterprise: bool = False
 
 
 @router.post("/login")
@@ -87,6 +88,34 @@ async def register(req: RegisterRequest):
 @router.get("/status")
 async def auth_status():
     """Check if authentication is enabled and whether a user exists."""
+    # Check enterprise auth first
+    enterprise_enabled = os.environ.get("COPAW_ENTERPRISE_ENABLED", "").lower() in (
+        "1", "true", "yes",
+    )
+    if not enterprise_enabled:
+        try:
+            from ...config import load_config, get_config_path
+            _cfg = load_config(get_config_path())
+            enterprise_enabled = _cfg.enterprise.enabled
+        except Exception:
+            pass
+    
+    if enterprise_enabled:
+        # Enterprise mode: auth is always enabled, check if users exist in DB
+        has_users = False
+        try:
+            from ...db.postgresql import get_database_manager
+            from sqlalchemy import text
+            manager = get_database_manager()
+            async with manager.session() as session:
+                result = await session.execute(text("SELECT EXISTS (SELECT 1 FROM sys_users)"))
+                has_users = result.scalar() or False
+        except Exception:
+            # DB not ready, assume no users
+            has_users = False
+        return AuthStatusResponse(enabled=True, has_users=has_users, is_enterprise=True)
+    
+    # Legacy auth
     return AuthStatusResponse(
         enabled=is_auth_enabled(),
         has_users=has_registered_users(),
