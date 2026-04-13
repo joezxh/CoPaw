@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Table, Tag, Select, DatePicker, Space, Switch,
   Typography, Tooltip
@@ -17,6 +18,7 @@ const RESULT_COLOR: Record<string, string> = {
 };
 
 export default function AuditLog() {
+  const { t } = useTranslation();
   const [logs, setLogs] = useState<AuditLogEntry[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -53,44 +55,44 @@ export default function AuditLog() {
 
   const columns = [
     {
-      title: "Timestamp",
+      title: t("enterprise.audit.timestamp"),
       dataIndex: "timestamp",
       key: "timestamp",
       width: 160,
       render: (v: string) => dayjs(v).format("MM/DD HH:mm:ss"),
     },
-    { title: "Action", dataIndex: "action_type", key: "action_type", width: 180, ellipsis: true },
-    { title: "Resource", dataIndex: "resource_type", key: "resource_type", width: 120 },
+    { title: t("enterprise.audit.action"), dataIndex: "action_type", key: "action_type", width: 180, ellipsis: true },
+    { title: t("enterprise.audit.resource"), dataIndex: "resource_type", key: "resource_type", width: 120 },
     {
-      title: "Result",
+      title: t("enterprise.audit.result"),
       dataIndex: "action_result",
       key: "action_result",
       width: 100,
       render: (r?: string) =>
-        r ? <Tag color={RESULT_COLOR[r] ?? "default"}>{r}</Tag> : "—",
+        r ? <Tag color={RESULT_COLOR[r] ?? "default"}>{t(`enterprise.audit.result.${r}`, r)}</Tag> : "—",
     },
-    { title: "Resource ID", dataIndex: "resource_id", key: "resource_id", ellipsis: true },
-    { title: "User ID", dataIndex: "user_id", key: "user_id", ellipsis: true },
-    { title: "IP", dataIndex: "client_ip", key: "client_ip", width: 130 },
+    { title: t("enterprise.audit.resourceId"), dataIndex: "resource_id", key: "resource_id", ellipsis: true },
+    { title: t("enterprise.audit.userId"), dataIndex: "user_id", key: "user_id", ellipsis: true },
+    { title: t("enterprise.audit.ip"), dataIndex: "client_ip", key: "client_ip", width: 130 },
     {
-      title: "Sensitive",
+      title: t("enterprise.audit.sensitive"),
       dataIndex: "is_sensitive",
       key: "is_sensitive",
       width: 90,
       render: (v: boolean) =>
-        v ? <Tooltip title="Sensitive operation"><SafetyOutlined style={{ color: "#f5222d" }} /></Tooltip> : null,
+        v ? <Tooltip title={t("enterprise.audit.sensitiveOp")}><SafetyOutlined style={{ color: "#f5222d" }} /></Tooltip> : null,
     },
   ];
 
   return (
     <div style={{ padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>Audit Log</Title>
+        <Title level={4} style={{ margin: 0 }}>{t("enterprise.audit.title")}</Title>
       </div>
 
       <Space wrap style={{ marginBottom: 16 }}>
         <Select
-          placeholder="Action type"
+          placeholder={t("enterprise.audit.actionType")}
           allowClear
           style={{ width: 200 }}
           onChange={setActionFilter}
@@ -100,26 +102,26 @@ export default function AuditLog() {
             "ROLE_CREATE", "ROLE_DELETE", "ROLE_ASSIGN", "PERMISSION_ASSIGN",
             "TASK_CREATE", "TASK_UPDATE", "TASK_DELETE", "TASK_STATUS_CHANGE",
             "WORKFLOW_CREATE", "WORKFLOW_RUN", "AGENT_RUN",
-          ].map((a) => ({ label: a, value: a }))}
+          ].map((a) => ({ label: t(`enterprise.audit.actions.${a}`, a), value: a }))}
         />
         <Select
-          placeholder="Resource"
+          placeholder={t("enterprise.audit.resourceType")}
           allowClear
           style={{ width: 140 }}
           onChange={setResourceFilter}
           options={["user", "role", "task", "workflow", "agent"].map((r) => ({
-            label: r, value: r,
+            label: t(`enterprise.audit.resources.${r}`, r), value: r,
           }))}
         />
         <Select
-          placeholder="Result"
+          placeholder={t("enterprise.audit.result")}
           allowClear
           style={{ width: 120 }}
           onChange={setResultFilter}
           options={[
-            { label: <Tag color="success">success</Tag>, value: "success" },
-            { label: <Tag color="error">failure</Tag>, value: "failure" },
-            { label: <Tag color="warning">denied</Tag>, value: "denied" },
+            { label: <Tag color="success">{t("enterprise.audit.result.success")}</Tag>, value: "success" },
+            { label: <Tag color="error">{t("enterprise.audit.result.failure")}</Tag>, value: "failure" },
+            { label: <Tag color="warning">{t("enterprise.audit.result.denied")}</Tag>, value: "denied" },
           ]}
         />
         <RangePicker
@@ -127,7 +129,7 @@ export default function AuditLog() {
           onChange={(_, s) => setDateRange(s[0] && s[1] ? [s[0], s[1]] : undefined)}
         />
         <Space>
-          <span style={{ fontSize: 13 }}>Sensitive only</span>
+          <span style={{ fontSize: 13 }}>{t("enterprise.audit.sensitiveOnly")}</span>
           <Switch size="small" checked={sensitiveOnly} onChange={setSensitiveOnly} />
         </Space>
       </Space>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Table,
   Button,
@@ -16,6 +17,7 @@ import { difyConnectorsApi, DifyConnector, DifyConnectorCreate } from "@/api/mod
 import PageContainer from "@/components/PageContainer";
 
 const DifyConnectors: React.FC = () => {
+  const { t } = useTranslation();
   const [form] = Form.useForm();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -25,11 +27,11 @@ const DifyConnectors: React.FC = () => {
   const { run: createConnector, loading: createLoading } = useRequest(difyConnectorsApi.create, {
     manual: true,
     onSuccess: () => {
-      message.success("Connector created successfully");
+      message.success(t("enterprise.dify.createSuccess"));
       setIsModalVisible(false);
       refresh();
     },
-    onError: (e: any) => message.error(e?.response?.data?.detail || "Failed to create"),
+    onError: (e: any) => message.error(e?.response?.data?.detail || t("enterprise.dify.createFailed")),
   });
 
   const { run: updateConnector, loading: updateLoading } = useRequest(
@@ -37,18 +39,18 @@ const DifyConnectors: React.FC = () => {
     {
       manual: true,
       onSuccess: () => {
-        message.success("Connector updated successfully");
+        message.success(t("enterprise.dify.updateSuccess"));
         setIsModalVisible(false);
         refresh();
       },
-      onError: (e: any) => message.error(e?.response?.data?.detail || "Failed to update"),
+      onError: (e: any) => message.error(e?.response?.data?.detail || t("enterprise.dify.updateFailed")),
     }
   );
 
   const { run: deleteConnector } = useRequest(difyConnectorsApi.delete, {
     manual: true,
     onSuccess: () => {
-      message.success("Connector deleted successfully");
+      message.success(t("enterprise.dify.deleteSuccess"));
       refresh();
     },
   });
@@ -79,7 +81,7 @@ const DifyConnectors: React.FC = () => {
 
   const columns = [
     {
-      title: "Connector ID",
+      title: t("enterprise.dify.connectorId"),
       dataIndex: "id",
       key: "id",
       render: (text: string) => (
@@ -88,7 +90,7 @@ const DifyConnectors: React.FC = () => {
           <CopyOutlined
             onClick={() => {
               navigator.clipboard.writeText(text);
-              message.success("ID coped to clipboard");
+              message.success(t("enterprise.dify.idCopied"));
             }}
             style={{ cursor: "pointer", color: "#1890ff" }}
           />
@@ -96,17 +98,17 @@ const DifyConnectors: React.FC = () => {
       ),
     },
     {
-      title: "Name",
+      title: t("enterprise.dify.name"),
       dataIndex: "name",
       key: "name",
     },
     {
-      title: "API URL",
+      title: t("enterprise.dify.apiUrl"),
       dataIndex: "api_url",
       key: "api_url",
     },
     {
-      title: "Active",
+      title: t("enterprise.dify.active"),
       dataIndex: "is_active",
       key: "is_active",
       render: (isActive: boolean, record: DifyConnector) => (
@@ -117,21 +119,21 @@ const DifyConnectors: React.FC = () => {
       ),
     },
     {
-      title: "Actions",
+      title: t("common.actions"),
       key: "actions",
       render: (_: any, record: DifyConnector) => (
         <Space size="middle">
           <Button type="link" onClick={() => handleEdit(record)} style={{ padding: 0 }}>
-            Edit
+            {t("common.edit")}
           </Button>
           <Popconfirm
-            title="Are you sure to delete this connector?"
+            title={t("enterprise.dify.deleteConfirm")}
             onConfirm={() => deleteConnector(record.id)}
-            okText="Yes"
-            cancelText="No"
+            okText={t("common.ok")}
+            cancelText={t("common.cancel")}
           >
             <Button type="link" danger style={{ padding: 0 }}>
-              Delete
+              {t("common.delete")}
             </Button>
           </Popconfirm>
         </Space>
@@ -141,11 +143,11 @@ const DifyConnectors: React.FC = () => {
 
   return (
     <PageContainer
-      title="Dify Connectors"
-      description="Manage external Dify workflow engine connectors. You can use these connector IDs with the `dify_workflow` Skill inside CoPaw agents."
+      title={t("enterprise.dify.title")}
+      description={t("enterprise.dify.description")}
       extra={[
         <Button key="create" type="primary" onClick={handleCreate}>
-          Create Connector
+          {t("enterprise.dify.createConnector")}
         </Button>,
       ]}
     >
@@ -158,7 +160,7 @@ const DifyConnectors: React.FC = () => {
       />
 
       <Modal
-        title={editingId ? "Edit Dify Connector" : "Create Dify Connector"}
+        title={editingId ? t("enterprise.dify.editConnector") : t("enterprise.dify.createConnector")}
         open={isModalVisible}
         onOk={() => form.submit()}
         onCancel={() => setIsModalVisible(false)}
@@ -167,29 +169,29 @@ const DifyConnectors: React.FC = () => {
         <Form form={form} layout="vertical" onFinish={onFinish} initialValues={{ is_active: true }}>
           <Form.Item
             name="name"
-            label="Name"
-            rules={[{ required: true, message: "Please input connector name!" }]}
+            label={t("enterprise.dify.name")}
+            rules={[{ required: true, message: t("enterprise.dify.nameRequired") }]}
           >
-            <Input placeholder="e.g. Sales Report Dify Engine" />
+            <Input placeholder={t("enterprise.dify.namePlaceholder")} />
           </Form.Item>
-          <Form.Item name="description" label="Description">
-            <Input.TextArea placeholder="Internal description" />
+          <Form.Item name="description" label={t("enterprise.dify.description")}>
+            <Input.TextArea placeholder={t("enterprise.dify.descriptionPlaceholder")} />
           </Form.Item>
           <Form.Item
             name="api_url"
-            label="API URL"
-            rules={[{ required: true, message: "Please input API URL!" }]}
+            label={t("enterprise.dify.apiUrl")}
+            rules={[{ required: true, message: t("enterprise.dify.apiUrlRequired") }]}
           >
-            <Input placeholder="e.g. https://api.dify.ai/v1" />
+            <Input placeholder={t("enterprise.dify.apiUrlPlaceholder")} />
           </Form.Item>
           <Form.Item
             name="api_key"
-            label="API Key"
-            rules={[{ required: true, message: "Please input API Key!" }]}
+            label={t("enterprise.dify.apiKey")}
+            rules={[{ required: true, message: t("enterprise.dify.apiKeyRequired") }]}
           >
-            <Input.Password placeholder="App Secret Key from Dify" />
+            <Input.Password placeholder={t("enterprise.dify.apiKeyPlaceholder")} />
           </Form.Item>
-          <Form.Item name="is_active" label="Status" valuePropName="checked">
+          <Form.Item name="is_active" label={t("enterprise.dify.status")} valuePropName="checked">
             <Switch />
           </Form.Item>
         </Form>

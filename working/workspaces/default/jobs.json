@@ -1,4 +1,48 @@
 {
-  "version": 1,
-  "jobs": []
+  "jobs": [
+    {
+      "dispatch": {
+        "channel": "console",
+        "meta": {},
+        "mode": "final",
+        "target": {
+          "session_id": "default",
+          "user_id": "admin"
+        },
+        "type": "channel"
+      },
+      "enabled": false,
+      "id": "f1dc42bf-7448-44fa-b6f9-1f5c3ad058ce",
+      "meta": {},
+      "name": "nvidia",
+      "request": {
+        "input": [
+          {
+            "content": [
+              {
+                "text": "您的消息内容",
+                "type": "text"
+              }
+            ],
+            "role": "user"
+          }
+        ],
+        "session_id": "default",
+        "user_id": "admin"
+      },
+      "runtime": {
+        "max_concurrency": 1,
+        "misfire_grace_seconds": 60,
+        "timeout_seconds": 120
+      },
+      "schedule": {
+        "cron": "0 9 * * *",
+        "timezone": "Asia/Shanghai",
+        "type": "cron"
+      },
+      "task_type": "agent",
+      "text": "test"
+    }
+  ],
+  "version": 1
 }
