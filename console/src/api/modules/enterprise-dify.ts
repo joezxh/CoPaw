@@ -26,14 +26,14 @@ export interface DifyConnectorUpdate {
 
 export const difyConnectorsApi = {
   list: () =>
-    request.get<DifyConnector[]>("/api/enterprise/dify/connectors"),
+    request.get<DifyConnector[]>("/enterprise/dify/connectors"),
 
   create: (data: DifyConnectorCreate) =>
-    request.post<DifyConnector>("/api/enterprise/dify/connectors", data),
+    request.post<DifyConnector>("/enterprise/dify/connectors", data),
 
   update: (id: string, data: DifyConnectorUpdate) =>
-    request.put<DifyConnector>(`/api/enterprise/dify/connectors/${id}`, data),
+    request.put<DifyConnector>(`/enterprise/dify/connectors/${id}`, data),
 
   delete: (id: string) =>
-    request.delete(`/api/enterprise/dify/connectors/${id}`),
+    request.delete(`/enterprise/dify/connectors/${id}`),
 };

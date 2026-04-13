@@ -8,6 +8,8 @@ import { authApi } from "../../api/modules/auth";
 import { enterpriseAuthApi } from "../../api/modules/enterprise-auth";
 import { setAuthToken, setAuthDisabled } from "../../api/config";
 import { useTheme } from "../../contexts/ThemeContext";
+import LanguageSwitcher from "../../components/LanguageSwitcher";
+import ThemeToggleButton from "../../components/ThemeToggleButton";
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -125,8 +127,23 @@ export default function LoginPage() {
         background: isDark
           ? "linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%)"
           : "linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%)",
+        position: "relative",
       }}
     >
+      {/* 语言和主题切换按钮 - 右上角 */}
+      <div
+        style={{
+          position: "absolute",
+          top: 24,
+          right: 24,
+          display: "flex",
+          gap: 12,
+        }}
+      >
+        <LanguageSwitcher />
+        <ThemeToggleButton />
+      </div>
+
       <div
         style={{
           width: 400,
@@ -222,8 +239,8 @@ export default function LoginPage() {
               style={{ color: "#1677ff", cursor: "pointer" }}
             >
               {isRegister
-                ? t("login.alreadyHaveAccount") || "Already have an account? Login"
-                : t("login.noAccount") || "No account? Register first"}
+                ? t("login.alreadyHaveAccount")
+                : t("login.noAccount")}
             </a>
           </Form.Item>
         </Form>

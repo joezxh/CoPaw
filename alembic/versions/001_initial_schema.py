@@ -3,8 +3,7 @@
 Initial enterprise schema migration.
 
 Creates all core tables:
-  sys_users, sys_user_groups, sys_user_group_members,
-  sys_departments,
+  sys_users, sys_departments,
   sys_roles, sys_role_permissions, sys_user_roles,
   sys_permissions,
   sys_user_sessions, sys_refresh_tokens,
@@ -69,25 +68,6 @@ def upgrade() -> None:
     # Back-fill FK from sys_departments.manager_id → sys_users.id
     op.create_foreign_key(
         "fk_sys_departments_manager_id", "sys_departments", "sys_users", ["manager_id"], ["id"], ondelete="SET NULL"
-    )
-
-    # ── sys_user_groups ────────────────────────────────────────────────────
-    op.create_table(
-        "sys_user_groups",
-        sa.Column("id", postgresql.UUID(as_uuid=True), server_default=sa.text("gen_random_uuid()"), primary_key=True),
-        sa.Column("name", sa.String(200), nullable=False, unique=True),
-        sa.Column("description", sa.String(500), nullable=True),
-        sa.Column("department_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("sys_departments.id", ondelete="SET NULL"), nullable=True),
-        sa.Column("created_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-        sa.Column("updated_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
-    )
-
-    # ── sys_user_group_members ─────────────────────────────────────────────
-    op.create_table(
-        "sys_user_group_members",
-        sa.Column("user_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("sys_users.id", ondelete="CASCADE"), primary_key=True),
-        sa.Column("group_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("sys_user_groups.id", ondelete="CASCADE"), primary_key=True),
-        sa.Column("joined_at", sa.DateTime(timezone=True), server_default=sa.func.now(), nullable=False),
     )
 
     # ── sys_roles ──────────────────────────────────────────────────────────
@@ -230,7 +210,6 @@ def upgrade() -> None:
         sa.Column("priority", sa.String(10), server_default="medium", nullable=False),
         sa.Column("creator_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("sys_users.id", ondelete="SET NULL"), nullable=True),
         sa.Column("assignee_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("sys_users.id", ondelete="SET NULL"), nullable=True),
-        sa.Column("assignee_group_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("sys_user_groups.id", ondelete="SET NULL"), nullable=True),
         sa.Column("department_id", postgresql.UUID(as_uuid=True), sa.ForeignKey("sys_departments.id", ondelete="SET NULL"), nullable=True),
         sa.Column("due_date", sa.DateTime(timezone=True), nullable=True),
         sa.Column("completed_at", sa.DateTime(timezone=True), nullable=True),
@@ -307,8 +286,6 @@ def downgrade() -> None:
     op.drop_table("sys_role_permissions")
     op.drop_table("sys_permissions")
     op.drop_table("sys_roles")
-    op.drop_table("sys_user_group_members")
-    op.drop_table("sys_user_groups")
     op.drop_table("sys_users")
     op.drop_table("sys_departments")
     op.drop_table("sys_workspace_agents")

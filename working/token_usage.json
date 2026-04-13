@@ -1,0 +1,18 @@
+{
+  "2026-04-13": {
+    "ollama:qwen3:0.6b": {
+      "provider_id": "ollama",
+      "model_name": "qwen3:0.6b",
+      "prompt_tokens": 7544,
+      "completion_tokens": 714,
+      "call_count": 2
+    },
+    "ollama:qwen3:8b": {
+      "provider_id": "ollama",
+      "model_name": "qwen3:8b",
+      "prompt_tokens": 12346,
+      "completion_tokens": 760,
+      "call_count": 3
+    }
+  }
+}

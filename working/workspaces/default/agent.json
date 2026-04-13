@@ -255,6 +255,11 @@
       }
     }
   },
+  "last_dispatch": {
+    "channel": "console",
+    "user_id": "default",
+    "session_id": "1776063292319"
+  },
   "running": {
     "max_iters": 100,
     "llm_retry_enabled": true,
@@ -313,6 +318,10 @@
       "provider_id": "",
       "model": ""
     }
+  },
+  "active_model": {
+    "provider_id": "ollama",
+    "model": "qwen3:8b"
   },
   "language": "zh",
   "system_prompt_files": [

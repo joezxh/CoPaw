@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Table, Button, Space, Tag, Input, Select,
   Modal, Form, message, Popconfirm, Drawer, Transfer, Typography
@@ -17,6 +18,7 @@ const STATUS_COLORS: Record<string, string> = {
 };
 
 export default function UserList() {
+  const { t } = useTranslation();
   const [users, setUsers] = useState<User[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -56,7 +58,7 @@ export default function UserList() {
 
   const handleCreate = async (values: Record<string, string>) => {
     await enterpriseUsersApi.create(values as any);
-    message.success("User created");
+    message.success(t("enterprise.users.createSuccess"));
     setCreateOpen(false);
     form.resetFields();
     load();
@@ -65,14 +67,14 @@ export default function UserList() {
   const handleUpdate = async (values: Record<string, string>) => {
     if (!editUser) return;
     await enterpriseUsersApi.update(editUser.id, values as any);
-    message.success("User updated");
+    message.success(t("enterprise.users.updateSuccess"));
     setEditUser(null);
     load();
   };
 
   const handleDisable = async (id: string) => {
     await enterpriseUsersApi.disable(id);
-    message.success("User disabled");
+    message.success(t("enterprise.users.disableSuccess"));
     load();
   };
 
@@ -90,36 +92,36 @@ export default function UserList() {
   const handleAssignRoles = async () => {
     if (!roleUser) return;
     await enterpriseUsersApi.assignRoles(roleUser.id, assignedRoleKeys);
-    message.success("Roles updated");
+    message.success(t("enterprise.users.rolesUpdated"));
     setRoleDrawerOpen(false);
   };
 
   const columns = [
-    { title: "Username", dataIndex: "username", key: "username" },
-    { title: "Email", dataIndex: "email", key: "email", render: (v?: string) => v ?? "—" },
-    { title: "Display Name", dataIndex: "display_name", key: "display_name" },
+    { title: t("enterprise.users.username"), dataIndex: "username", key: "username" },
+    { title: t("enterprise.users.email"), dataIndex: "email", key: "email", render: (v?: string) => v ?? "—" },
+    { title: t("enterprise.users.displayName"), dataIndex: "display_name", key: "display_name" },
     {
-      title: "Status",
+      title: t("enterprise.users.status"),
       dataIndex: "status",
       key: "status",
-      render: (s: string) => <Tag color={STATUS_COLORS[s] ?? "default"}>{s}</Tag>,
+      render: (s: string) => <Tag color={STATUS_COLORS[s] ?? "default"}>{t(`enterprise.users.status.${s}`)}</Tag>,
     },
     {
-      title: "MFA",
+      title: t("enterprise.users.mfa"),
       dataIndex: "mfa_enabled",
       key: "mfa_enabled",
-      render: (v: boolean) => <Tag color={v ? "blue" : "default"}>{v ? "Enabled" : "Disabled"}</Tag>,
+      render: (v: boolean) => <Tag color={v ? "blue" : "default"}>{v ? t("common.enabled") : t("common.disabled")}</Tag>,
     },
-    { title: "Last Login", dataIndex: "last_login_at", key: "last_login_at", render: (v?: string) => v ? new Date(v).toLocaleString() : "—" },
+    { title: t("enterprise.users.lastLogin"), dataIndex: "last_login_at", key: "last_login_at", render: (v?: string) => v ? new Date(v).toLocaleString() : "—" },
     {
-      title: "Actions",
+      title: t("common.actions"),
       key: "actions",
       render: (_: unknown, record: User) => (
         <Space>
-          <Button size="small" icon={<EditOutlined />} onClick={() => { setEditUser(record); form.setFieldsValue(record); }}>Edit</Button>
-          <Button size="small" icon={<KeyOutlined />} onClick={() => openRoleDrawer(record)}>Roles</Button>
-          <Popconfirm title="Disable this user?" onConfirm={() => handleDisable(record.id)}>
-            <Button size="small" danger icon={<DeleteOutlined />} disabled={record.status === "disabled"}>Disable</Button>
+          <Button size="small" icon={<EditOutlined />} onClick={() => { setEditUser(record); form.setFieldsValue(record); }}>{t("common.edit")}</Button>
+          <Button size="small" icon={<KeyOutlined />} onClick={() => openRoleDrawer(record)}>{t("enterprise.users.roles")}</Button>
+          <Popconfirm title={t("enterprise.users.disableConfirm")} onConfirm={() => handleDisable(record.id)}>
+            <Button size="small" danger icon={<DeleteOutlined />} disabled={record.status === "disabled"}>{t("enterprise.users.disable")}</Button>
           </Popconfirm>
         </Space>
       ),
@@ -129,30 +131,30 @@ export default function UserList() {
   return (
     <div style={{ padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>User Management</Title>
+        <Title level={4} style={{ margin: 0 }}>{t("enterprise.users.title")}</Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-          New User
+          {t("enterprise.users.addUser")}
         </Button>
       </div>
 
       <Space style={{ marginBottom: 16 }}>
         <Input
           prefix={<SearchOutlined />}
-          placeholder="Search username or email"
+          placeholder={t("enterprise.users.searchPlaceholder")}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           style={{ width: 260 }}
           allowClear
         />
         <Select
-          placeholder="Status"
+          placeholder={t("enterprise.users.status")}
           allowClear
           style={{ width: 140 }}
           onChange={setStatusFilter}
           options={[
-            { label: "Active", value: "active" },
-            { label: "Disabled", value: "disabled" },
-            { label: "Vacation", value: "vacation" },
+            { label: t("enterprise.users.status.active"), value: "active" },
+            { label: t("enterprise.users.status.disabled"), value: "disabled" },
+            { label: t("enterprise.users.status.vacation"), value: "vacation" },
           ]}
         />
       </Space>
@@ -168,40 +170,44 @@ export default function UserList() {
 
       {/* Create Modal */}
       <Modal
-        title="Create User"
+        title={t("enterprise.users.createUser")}
         open={createOpen}
         onCancel={() => { setCreateOpen(false); form.resetFields(); }}
         onOk={() => form.validateFields().then(handleCreate)}
+        okText={t("common.ok")}
+        cancelText={t("common.cancel")}
         destroyOnClose
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="username" label="Username" rules={[{ required: true }]}>
+          <Form.Item name="username" label={t("enterprise.users.username")} rules={[{ required: true, message: t("enterprise.users.usernameRequired") }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="password" label="Password" rules={[{ required: true, min: 8 }]}>
+          <Form.Item name="password" label={t("enterprise.users.password")} rules={[{ required: true, min: 8, message: t("enterprise.users.passwordMinLength") }]}>
             <Input.Password />
           </Form.Item>
-          <Form.Item name="email" label="Email"><Input /></Form.Item>
-          <Form.Item name="display_name" label="Display Name"><Input /></Form.Item>
+          <Form.Item name="email" label={t("enterprise.users.email")}><Input /></Form.Item>
+          <Form.Item name="display_name" label={t("enterprise.users.displayName")}><Input /></Form.Item>
         </Form>
       </Modal>
 
       {/* Edit Modal */}
       <Modal
-        title="Edit User"
+        title={t("enterprise.users.editUser")}
         open={!!editUser}
         onCancel={() => setEditUser(null)}
         onOk={() => form.validateFields().then(handleUpdate)}
+        okText={t("common.ok")}
+        cancelText={t("common.cancel")}
         destroyOnClose
       >
         <Form form={form} layout="vertical" initialValues={editUser ?? {}}>
-          <Form.Item name="email" label="Email"><Input /></Form.Item>
-          <Form.Item name="display_name" label="Display Name"><Input /></Form.Item>
-          <Form.Item name="status" label="Status">
+          <Form.Item name="email" label={t("enterprise.users.email")}><Input /></Form.Item>
+          <Form.Item name="display_name" label={t("enterprise.users.displayName")}><Input /></Form.Item>
+          <Form.Item name="status" label={t("enterprise.users.status")}>
             <Select options={[
-              { label: "Active", value: "active" },
-              { label: "Disabled", value: "disabled" },
-              { label: "Vacation", value: "vacation" },
+              { label: t("enterprise.users.status.active"), value: "active" },
+              { label: t("enterprise.users.status.disabled"), value: "disabled" },
+              { label: t("enterprise.users.status.vacation"), value: "vacation" },
             ]} />
           </Form.Item>
         </Form>
@@ -209,10 +215,10 @@ export default function UserList() {
 
       {/* Role Drawer */}
       <Drawer
-        title={`Assign Roles — ${roleUser?.username}`}
+        title={`${t("enterprise.users.assignRoles")} — ${roleUser?.username}`}
         open={roleDrawerOpen}
         onClose={() => setRoleDrawerOpen(false)}
-        extra={<Button type="primary" onClick={handleAssignRoles}>Save</Button>}
+        extra={<Button type="primary" onClick={handleAssignRoles}>{t("common.save")}</Button>}
         width={560}
       >
         <Transfer

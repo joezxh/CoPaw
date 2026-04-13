@@ -1,0 +1,393 @@
+/**
+ * Default Layout Styles
+ * 
+ * 企业版布局样式
+ * 支持亮色和暗色主题
+ */
+
+// ============================================================================
+// Layout
+// ============================================================================
+
+.defaultLayout {
+  min-height: 100vh;
+  height: 100vh;
+  overflow: hidden;
+}
+
+// ============================================================================
+// Header
+// ============================================================================
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
+  z-index: 10;
+  height: 64px;
+  line-height: 64px;
+  transition: all 0.3s;
+}
+
+.headerLeft {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.triggerButton {
+  font-size: 18px;
+  cursor: pointer;
+  transition: color 0.3s;
+
+  &:hover {
+    color: #1890ff;
+  }
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1890ff;
+}
+
+.logoIcon {
+  font-size: 24px;
+}
+
+.logoText {
+  white-space: nowrap;
+}
+
+.userMenu {
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: background 0.3s;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.025);
+  }
+}
+
+.userName {
+  font-size: 14px;
+  color: rgba(0, 0, 0, 0.85);
+}
+
+// ============================================================================
+// Sider
+// ============================================================================
+
+.sider {
+  background: #fff;
+  box-shadow: 2px 0 8px rgba(0, 21, 41, 0.06);
+  overflow: auto;
+  height: calc(100vh - 64px);
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+// 智能体选择器容器
+.agentSelectorContainer {
+  padding: 16px;
+  border-bottom: 1px solid #f0f0f0;
+  background: #fafafa;
+}
+
+.logo {
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid #f0f0f0;
+
+  h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #1890ff;
+    white-space: nowrap;
+  }
+}
+
+.loadingMenu {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: rgba(0, 0, 0, 0.45);
+}
+
+.menu {
+  border-right: none;
+  flex: 1;
+  overflow-y: auto;
+  
+  // 亮色主题菜单样式
+  :global {
+    .copaw-menu-item {
+      font-size: 15px !important;
+      font-weight: 600 !important;
+    }
+    
+    .copaw-menu-submenu-title {
+      font-size: 15px !important;
+      font-weight: 600 !important;
+    }
+    
+    .copaw-menu-submenu .copaw-menu-item {
+      font-size: 14px !important;
+      font-weight: 400 !important;
+      padding-left: 40px !important;  // 子菜单项缩进增加
+    }
+  }
+}
+
+// ============================================================================
+// Content
+// ============================================================================
+
+.defaultContent {
+  padding: 0;
+  background: #f0f2f5;
+  height: calc(100vh - 64px);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.pageContent {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 24px;
+  background: #f0f2f5;
+  
+  // 滚动条样式
+  &::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    
+    &:hover {
+      background: rgba(0, 0, 0, 0.3);
+    }
+  }
+}
+
+// 聊天页面专用 - 铺满容器无内边距
+.chatContent {
+  flex: 1;
+  overflow: hidden;
+  padding: 0;
+  background: #f0f2f5;
+}
+
+// ============================================================================
+// Sider Dark Theme
+// ============================================================================
+
+.siderDark {
+  background: #1a1a1a !important;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.3);
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+  
+  .agentSelectorContainer {
+    background: #1a1a1a;
+    border-bottom-color: rgba(255, 255, 255, 0.08);
+  }
+  
+  .menu {
+    background: #1a1a1a !important;
+    
+    // Copaw Design Menu 暗黑主题覆盖 - 参考个人版配置
+    :global {
+      .copaw-menu {
+        background: #1a1a1a !important;
+        color: rgba(255, 255, 255, 0.75) !important;
+      }
+      
+      // 主菜单项样式
+      .copaw-menu-item {
+        color: rgba(255, 255, 255, 0.75) !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        
+        &:hover {
+          color: rgba(255, 255, 255, 0.95) !important;
+          background: rgba(255, 255, 255, 0.1) !important;
+        }
+      }
+      
+      // 菜单选中状态 - 参考个人版橙色主题
+      .copaw-menu-item-selected {
+        background: rgba(255, 127, 22, 0.5) !important;
+        color: #ff7f16 !important;
+        
+        &:hover {
+          color: #ff7f16 !important;
+        }
+      }
+      
+      // 子菜单标题
+      .copaw-menu-submenu-title {
+        color: rgba(255, 255, 255, 0.75) !important;
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        
+        &:hover {
+          color: rgba(255, 255, 255, 0.95) !important;
+        }
+      }
+      
+      // 子菜单标题箭头
+      .copaw-menu-submenu-arrow {
+        color: rgba(255, 255, 255, 0.45) !important;
+      }
+      
+      // 子菜单项样式 - 缩进和较小字体
+      .copaw-menu-submenu .copaw-menu-item {
+        color: rgba(255, 255, 255, 0.75) !important;
+        font-size: 14px !important;
+        font-weight: 400 !important;
+        padding-left: 40px !important;  // 子菜单项缩进增加
+        
+        &:hover {
+          color: rgba(255, 255, 255, 0.95) !important;
+          background: rgba(255, 255, 255, 0.1) !important;
+        }
+        
+        &.copaw-menu-item-selected {
+          background: rgba(255, 127, 22, 0.5) !important;
+          color: #ff7f16 !important;
+        }
+      }
+    }
+  }
+}
+
+// ============================================================================
+// Dark Theme
+// ============================================================================
+
+:global(.dark-mode) {
+  // Header 暗黑主题
+  .header {
+    background: #1a1a1a !important;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    
+    .triggerButton {
+      color: rgba(255, 255, 255, 0.75);
+      
+      &:hover {
+        color: #fff;
+        background: rgba(255, 255, 255, 0.08);
+      }
+    }
+    
+    // 语言切换和主题切换按钮 - 确保在深色模式下可见
+    :global {
+      .copaw-btn-text,
+      .ant-btn-text {
+        color: rgba(255, 255, 255, 0.75) !important;
+        
+        &:hover {
+          color: #fff !important;
+          background: rgba(255, 255, 255, 0.08) !important;
+        }
+        
+        .anticon,
+        svg {
+          color: rgba(255, 255, 255, 0.75) !important;
+          fill: rgba(255, 255, 255, 0.75) !important;
+        }
+        
+        &:hover .anticon,
+        &:hover svg {
+          color: #fff !important;
+          fill: #fff !important;
+        }
+      }
+      
+      // 确保所有图标在深色模式下可见
+      .anticon {
+        color: rgba(255, 255, 255, 0.75) !important;
+      }
+    }
+    
+    .logo {
+      color: #1890ff;
+      
+      .logoIcon {
+        color: #1890ff;
+      }
+      
+      .logoText {
+        color: #1890ff;
+      }
+    }
+  }
+  
+  // Content 暗黑主题
+  .defaultContent {
+    background: #141414;
+  }
+  
+  .pageContent {
+    background: #141414;
+    color: rgba(255, 255, 255, 0.85);
+    
+    // 滚动条暗黑样式
+    &::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    
+    &::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.2);
+      
+      &:hover {
+        background: rgba(255, 255, 255, 0.3);
+      }
+    }
+  }
+  
+  .chatContent {
+    background: #141414;
+  }
+  
+  // 用户菜单
+  .userMenu {
+    &:hover {
+      background: rgba(255, 255, 255, 0.08);
+    }
+    
+    .userName {
+      color: rgba(255, 255, 255, 0.85);
+    }
+  }
+}
+

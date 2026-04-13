@@ -22,7 +22,7 @@ export interface Permission {
 export const enterpriseRolesApi = {
   listRoles: (search?: string) => {
     const q = search ? `?search=${encodeURIComponent(search)}` : "";
-    return request<Role[]>(`/api/enterprise/roles${q}`);
+    return request<Role[]>(`/enterprise/roles${q}`);
   },
 
   createRole: (data: {
@@ -32,41 +32,41 @@ export const enterpriseRolesApi = {
     department_id?: string;
     is_system_role?: boolean;
   }) =>
-    request<Role>("/api/enterprise/roles", {
+    request<Role>("/enterprise/roles", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
-  getRole: (roleId: string) => request<Role>(`/api/enterprise/roles/${roleId}`),
+  getRole: (roleId: string) => request<Role>(`/enterprise/roles/${roleId}`),
 
   updateRole: (roleId: string, data: { description?: string; department_id?: string }) =>
-    request<Role>(`/api/enterprise/roles/${roleId}`, {
+    request<Role>(`/enterprise/roles/${roleId}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   deleteRole: (roleId: string) =>
-    request<{ detail: string }>(`/api/enterprise/roles/${roleId}`, {
+    request<{ detail: string }>(`/enterprise/roles/${roleId}`, {
       method: "DELETE",
     }),
 
   getRolePermissions: (roleId: string) =>
-    request<Permission[]>(`/api/enterprise/roles/${roleId}/permissions`),
+    request<Permission[]>(`/enterprise/roles/${roleId}/permissions`),
 
   setRolePermissions: (roleId: string, permissionIds: string[]) =>
     request<{ detail: string }>(
-      `/api/enterprise/roles/${roleId}/permissions`,
+      `/enterprise/roles/${roleId}/permissions`,
       { method: "PUT", body: JSON.stringify({ permission_ids: permissionIds }) }
     ),
 
-  listPermissions: () => request<Permission[]>("/api/enterprise/permissions"),
+  listPermissions: () => request<Permission[]>("/enterprise/permissions"),
 
   createPermission: (data: {
     resource: string;
     action: string;
     description?: string;
   }) =>
-    request<Permission>("/api/enterprise/permissions", {
+    request<Permission>("/enterprise/permissions", {
       method: "POST",
       body: JSON.stringify(data),
     }),

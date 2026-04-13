@@ -11,8 +11,8 @@ import {
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useAppMessage } from "../hooks/useAppMessage";
-import AgentSelector from "../components/AgentSelector";
+import { useAppMessage } from "../../hooks/useAppMessage";
+import AgentSelector from "../../components/AgentSelector";
 import {
   SparkChatTabFill,
   SparkWifiLine,
@@ -36,10 +36,10 @@ import {
   SparkMenuFoldLine,
   SparkOtherLine,
 } from "@agentscope-ai/icons";
-import { clearAuthToken } from "../api/config";
-import { authApi } from "../api/modules/auth";
+import { clearAuthToken } from "../../api/config";
+import { authApi } from "../../api/modules/auth";
 import styles from "./index.module.less";
-import { useTheme } from "../contexts/ThemeContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { KEY_TO_PATH } from "./constants";
 
 // ── Layout ────────────────────────────────────────────────────────────────
@@ -264,10 +264,10 @@ export default function Sidebar({ selectedKey }: SidebarProps) {
       label: t("nav.enterprisePermissions", "Permission Management"),
     },
     {
-      key: "user-groups",
+      key: "enterprise-orgs",
       icon: <SparkUserGroupLine size={18} />,
-      path: "/enterprise/groups",
-      label: t("nav.userGroups", "User Groups"),
+      path: "/enterprise/organizations",
+      label: t("nav.enterpriseOrgs", "Organizations"),
     },
     {
       key: "enterprise-workflows",
@@ -428,8 +428,8 @@ export default function Sidebar({ selectedKey }: SidebarProps) {
           icon: <SparkModifyLine size={16} />,
         },
         {
-          key: "user-groups",
-          label: collapsed ? null : t("nav.userGroups", "User Groups"),
+          key: "enterprise-orgs",
+          label: collapsed ? null : t("nav.enterpriseOrgs", "Organizations"),
           icon: <SparkUserGroupLine size={16} />,
         },
         {

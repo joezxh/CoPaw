@@ -2,12 +2,12 @@ import { Suspense, lazy } from "react";
 import { Layout, Spin } from "antd";
 import { Routes, Route, useLocation, Navigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import Sidebar from "../Sidebar";
-import Header from "../Header";
+import Sidebar from "../copaw/Sidebar";
+import Header from "../copaw/Header";
 import ConsoleCronBubble from "../../components/ConsoleCronBubble";
 import { ChunkErrorBoundary } from "../../components/ChunkErrorBoundary";
 import { lazyWithRetry } from "../../utils/lazyWithRetry";
-import styles from "../index.module.less";
+import styles from "../copaw/index.module.less";
 
 // Chat is eagerly loaded (default landing page)
 import Chat from "../../pages/Chat";
@@ -49,7 +49,7 @@ const VoiceTranscriptionPage = lazyWithRetry(
   () => import("../../pages/Settings/VoiceTranscription"),
 );
 const AgentsPage = lazyWithRetry(() => import("../../pages/Settings/Agents"));
-const GroupList = lazy(() => import("@/pages/Enterprise/Groups/GroupList"));
+const OrgTree = lazy(() => import("@/pages/Enterprise/Organizations/OrgTree"));
 const DLPRules = lazy(() => import("@/pages/Enterprise/Security/DLPRules"));
 const AlertRules = lazy(() => import("@/pages/Enterprise/Security/AlertRules"));
 const DifyConnectors = lazy(() => import("@/pages/Enterprise/Dify/Connectors"));
@@ -82,7 +82,7 @@ const pathToKey: Record<string, string> = {
   // Enterprise
   "/enterprise/users": "enterprise-users",
   "/enterprise/permissions": "enterprise-permissions",
-  "/enterprise/groups": "user-groups",
+  "/enterprise/organizations": "enterprise-orgs",
   "/enterprise/workflows": "enterprise-workflows",
   "/enterprise/tasks": "enterprise-tasks",
   "/enterprise/dlp-rules": "dlp-rules",
@@ -137,7 +137,7 @@ export default function MainLayout() {
                   <Route path="/voice-transcription" element={<VoiceTranscriptionPage />} />
                   <Route path="/enterprise/users" element={<UserList />} />
                   <Route path="/enterprise/permissions" element={<RoleList />} />
-                  <Route path="/enterprise/groups" element={<GroupList />} />
+                  <Route path="/enterprise/organizations" element={<OrgTree />} />
                   <Route path="/enterprise/workflows" element={<WorkflowList />} />
                   <Route path="/enterprise/tasks" element={<TaskBoard />} />
                   <Route path="/enterprise/dlp-rules" element={<DLPRules />} />

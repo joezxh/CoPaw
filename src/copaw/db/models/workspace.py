@@ -15,7 +15,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base, UUIDPrimaryKeyMixin, TimestampMixin, TenantAwareMixin
 
 if TYPE_CHECKING:
-    from .user import User, UserGroup
+    from .user import User
 
 class Workspace(Base, UUIDPrimaryKeyMixin, TimestampMixin, TenantAwareMixin):
     """

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-User, UserGroup, UserGroupMember ORM models.
+User ORM model.
 """
 from __future__ import annotations
 
@@ -85,73 +85,7 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin, TenantAwareMixin):
     sessions: Mapped[List["UserSession"]] = relationship(
         "UserSession", back_populates="user", cascade="all, delete-orphan"
     )
-    group_memberships: Mapped[List["UserGroupMember"]] = relationship(
-        "UserGroupMember", back_populates="user", cascade="all, delete-orphan"
-    )
 
     def __repr__(self) -> str:  # pragma: no cover
         return f"<User id={self.id} username={self.username!r}>"
 
-
-class UserGroup(Base, UUIDPrimaryKeyMixin, TimestampMixin, TenantAwareMixin):
-    """A named group of users (team / squad / department group).
-    
-    用户组表 - 用于管理用户分组,支持团队、小队或部门级别的分组
-    """
-
-    __tablename__ = "sys_user_groups"
-    __table_args__ = {"comment": "用户组表"}
-
-    name: Mapped[str] = mapped_column(
-        String(200), unique=True, nullable=False,
-        comment="用户组名称"
-    )
-    description: Mapped[Optional[str]] = mapped_column(
-        String(500), nullable=True,
-        comment="用户组描述"
-    )
-    department_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("sys_departments.id", ondelete="SET NULL"),
-        nullable=True,
-        comment="所属部门ID"
-    )
-
-    # Relationships
-    members: Mapped[List["UserGroupMember"]] = relationship(
-        "UserGroupMember", back_populates="group", cascade="all, delete-orphan"
-    )
-
-    def __repr__(self) -> str:  # pragma: no cover
-        return f"<UserGroup id={self.id} name={self.name!r}>"
-
-
-class UserGroupMember(Base):
-    """Association table: Many-to-many User ↔ UserGroup.
-    
-    用户组成员关联表 - 实现用户与用户组的多对多关系
-    """
-
-    __tablename__ = "sys_user_group_members"
-    __table_args__ = {"comment": "用户组成员关联表"}
-
-    user_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("sys_users.id", ondelete="CASCADE"),
-        primary_key=True,
-        comment="用户ID"
-    )
-    group_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("sys_user_groups.id", ondelete="CASCADE"),
-        primary_key=True,
-        comment="用户组ID"
-    )
-    joined_at: Mapped[datetime] = mapped_column(
-        DateTime(timezone=True), server_default=func.now(),
-        comment="加入时间"
-    )
-
-    # Relationships
-    user: Mapped["User"] = relationship("User", back_populates="group_memberships")
-    group: Mapped["UserGroup"] = relationship("UserGroup", back_populates="members")

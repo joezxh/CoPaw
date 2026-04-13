@@ -722,3 +722,177 @@ class ChannelMessage(Base, UUIDPrimaryKeyMixin, TenantAwareMixin):
     user: Mapped[Optional["User"]] = relationship(
         "User", foreign_keys=[user_id]
     )
+
+# ============================================================================
+# Registry Models — 注册表模型（Phase 5）
+# ============================================================================
+
+class SkillRegistry(Base, UUIDPrimaryKeyMixin, TenantAwareMixin):
+    """AI 技能注册表 — 注册所有可用的技能"""
+
+    __tablename__ = "ai_skill_registry"
+    __table_args__ = (
+        Index("ix_ai_skill_registry_tenant", "tenant_id"),
+        Index("ix_ai_skill_registry_name", "skill_name"),
+        Index("ix_ai_skill_registry_active", "is_active"),
+        {"comment": "AI 技能注册表"},
+    )
+
+    skill_name: Mapped[str] = mapped_column(
+        String(200), nullable=False,
+        comment="技能名称"
+    )
+    version: Mapped[str] = mapped_column(
+        String(50), nullable=False,
+        comment="技能版本"
+    )
+    description: Mapped[Optional[str]] = mapped_column(
+        Text, nullable=True,
+        comment="技能描述"
+    )
+    storage_key: Mapped[Optional[str]] = mapped_column(
+        String(1024), nullable=True,
+        comment="技能目录在对象存储中的键"
+    )
+    is_active: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="true",
+        comment="是否激活"
+    )
+
+
+class ModelRegistry(Base, UUIDPrimaryKeyMixin, TenantAwareMixin):
+    """AI 模型注册表 — 注册所有可用的 AI 模型"""
+
+    __tablename__ = "ai_model_registry"
+    __table_args__ = (
+        Index("ix_ai_model_registry_tenant", "tenant_id"),
+        Index("ix_ai_model_registry_type", "model_type"),
+        Index("ix_ai_model_registry_available", "is_available"),
+        {"comment": "AI 模型注册表"},
+    )
+
+    model_name: Mapped[str] = mapped_column(
+        String(200), nullable=False,
+        comment="模型名称"
+    )
+    model_type: Mapped[str] = mapped_column(
+        String(50), nullable=False,
+        comment="模型类型: llm/embedding/vision/tts/stt"
+    )
+    architecture: Mapped[Optional[str]] = mapped_column(
+        String(100), nullable=True,
+        comment="模型架构"
+    )
+    storage_key: Mapped[Optional[str]] = mapped_column(
+        String(1024), nullable=True,
+        comment="模型文件在对象存储中的键"
+    )
+    file_size: Mapped[Optional[int]] = mapped_column(
+        BigInteger, nullable=True,
+        comment="文件大小 (bytes)"
+    )
+    quantization: Mapped[Optional[str]] = mapped_column(
+        String(50), nullable=True,
+        comment="量化格式: fp16/int8/int4"
+    )
+    default_params: Mapped[Optional[dict]] = mapped_column(
+        JSONB, server_default="{}", nullable=True,
+        comment="默认参数"
+    )
+    min_gpu_memory: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True,
+        comment="最小GPU内存 (MB)"
+    )
+    min_ram: Mapped[Optional[int]] = mapped_column(
+        Integer, nullable=True,
+        comment="最小系统内存 (MB)"
+    )
+    is_available: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=True, server_default="true",
+        comment="是否可用"
+    )
+    health_status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="unknown", server_default="unknown",
+        comment="健康状态: unknown/healthy/unhealthy"
+    )
+
+
+class InferenceTask(Base, UUIDPrimaryKeyMixin, TenantAwareMixin):
+    """AI 推理任务表"""
+
+    __tablename__ = "ai_inference_tasks"
+    __table_args__ = (
+        Index("ix_ai_inference_tasks_status", "status"),
+        Index("ix_ai_inference_tasks_tenant", "tenant_id"),
+        Index("ix_ai_inference_tasks_model", "model_id"),
+        {"comment": "AI 推理任务表"},
+    )
+
+    model_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("ai_model_registry.id"),
+        nullable=True,
+        comment="模型 ID"
+    )
+    user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("sys_users.id", ondelete="SET NULL"),
+        nullable=True,
+        comment="用户 ID"
+    )
+    workspace_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("sys_workspaces.id", ondelete="SET NULL"),
+        nullable=True,
+        comment="工作空间 ID"
+    )
+    task_type: Mapped[str] = mapped_column(
+        String(50), nullable=False,
+        comment="任务类型: completion/embedding/chat"
+    )
+    input_data: Mapped[dict] = mapped_column(
+        JSONB, nullable=False,
+        comment="输入数据"
+    )
+    output_data: Mapped[Optional[dict]] = mapped_column(
+        JSONB, nullable=True,
+        comment="输出数据"
+    )
+    status: Mapped[str] = mapped_column(
+        String(20), nullable=False, default="pending", server_default="pending",
+        comment="状态: pending/running/completed/failed"
+    )
+    worker_id: Mapped[Optional[str]] = mapped_column(
+        String(100), nullable=True,
+        comment="执行Worker ID"
+    )
+    prompt_tokens: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0",
+        comment="Prompt Token数"
+    )
+    completion_tokens: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0, server_default="0",
+        comment="Completion Token数"
+    )
+    error_message: Mapped[Optional[str]] = mapped_column(
+        Text, nullable=True,
+        comment="错误信息"
+    )
+    started_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+        comment="开始时间"
+    )
+    completed_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True,
+        comment="完成时间"
+    )
+
+    model: Mapped[Optional["ModelRegistry"]] = relationship(
+        "ModelRegistry", foreign_keys=[model_id]
+    )
+    user: Mapped[Optional["User"]] = relationship(
+        "User", foreign_keys=[user_id]
+    )
+    workspace: Mapped[Optional["Workspace"]] = relationship(
+        "Workspace", foreign_keys=[workspace_id]
+    )

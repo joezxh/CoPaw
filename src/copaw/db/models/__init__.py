@@ -6,7 +6,7 @@ Re-exports all models so Alembic's env.py can import a single target_metadata.
 from .base import Base  # noqa: F401 — must be first for metadata
 
 # Import all models to register them with Base.metadata
-from .user import User, UserGroup, UserGroupMember  # noqa: F401
+from .user import User  # noqa: F401
 from .role import Role, RolePermission, UserRole  # noqa: F401
 from .permission import Permission  # noqa: F401
 from .organization import Department  # noqa: F401
@@ -42,8 +42,6 @@ from .memory import (  # noqa: F401
 __all__ = [
     "Base",
     "User",
-    "UserGroup",
-    "UserGroupMember",
     "Role",
     "RolePermission",
     "UserRole",

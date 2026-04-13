@@ -23,7 +23,7 @@ from ...enterprise.rbac_service import RBACService
 from ...enterprise.audit_service import AuditService, AuditAction
 from ...enterprise.middleware import get_current_user
 
-router = APIRouter(prefix="/api/enterprise", tags=["enterprise-roles"])
+router = APIRouter(prefix="/enterprise", tags=["enterprise-roles"])
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────

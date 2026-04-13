@@ -39,7 +39,7 @@ export const KEY_TO_PATH: Record<string, string> = {
   // Enterprise
   "enterprise-users": "/enterprise/users",
   "enterprise-permissions": "/enterprise/permissions",
-  "user-groups": "/enterprise/groups",
+  "enterprise-orgs": "/enterprise/organizations",
   "enterprise-workflows": "/enterprise/workflows",
   "enterprise-tasks": "/enterprise/tasks",
   "enterprise-audit": "/enterprise/audit",

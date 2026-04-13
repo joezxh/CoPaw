@@ -1,10 +1,10 @@
 import { Layout, Space, Badge, Spin, Tooltip } from "antd";
-import LanguageSwitcher from "../components/LanguageSwitcher/index";
-import ThemeToggleButton from "../components/ThemeToggleButton";
+import LanguageSwitcher from "../../components/LanguageSwitcher";
+import ThemeToggleButton from "../../components/ThemeToggleButton";
 import { useTranslation } from "react-i18next";
 import { Button, Modal } from "@agentscope-ai/design";
 import styles from "./index.module.less";
-import api from "../api";
+import { rootApi } from "../../api/modules/root";
 import {
   GITHUB_URL,
   getDocsUrl,
@@ -16,7 +16,7 @@ import {
   isStableVersion,
   compareVersions,
 } from "./constants";
-import { useTheme } from "../contexts/ThemeContext";
+import { useTheme } from "../../contexts/ThemeContext";
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -58,7 +58,7 @@ export default function Header() {
   const [updateMarkdown, setUpdateMarkdown] = useState<string>("");
 
   useEffect(() => {
-    api
+    rootApi
       .getVersion()
       .then((res) => setVersion(res?.version ?? ""))
       .catch(() => {});

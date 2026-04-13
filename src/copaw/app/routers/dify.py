@@ -9,7 +9,7 @@ from ...enterprise.middleware import get_current_user
 from ...db.models.dify import DifyConnector
 from ...enterprise.dify_client import DifyClient
 
-router = APIRouter(prefix="/api/enterprise/dify", tags=["Enterprise Dify"])
+router = APIRouter(prefix="/enterprise/dify", tags=["Enterprise Dify"])
 
 class DifyConnectorCreate(BaseModel):
     name: str

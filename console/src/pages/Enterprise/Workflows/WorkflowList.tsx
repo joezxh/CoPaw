@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Table, Tag, Select, Button, Space, Modal, Form, Input,
   message, Popconfirm, Typography, Tooltip
@@ -25,6 +26,7 @@ const STATUS_COLOR: Record<WorkflowStatus, string> = {
 };
 
 export default function WorkflowList() {
+  const { t } = useTranslation();
   const [workflows, setWorkflows] = useState<Workflow[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -56,7 +58,7 @@ export default function WorkflowList() {
 
   const handleCreate = async (values: Record<string, string>) => {
     await enterpriseWorkflowsApi.create(values as any);
-    message.success("Workflow created");
+    message.success(t("enterprise.workflows.createSuccess"));
     setCreateOpen(false);
     form.resetFields();
     load();
@@ -66,39 +68,39 @@ export default function WorkflowList() {
     await enterpriseWorkflowsApi.update(wf.id, {
       status: wf.status === "active" ? "draft" : "active",
     });
-    message.success("Status updated");
+    message.success(t("enterprise.workflows.statusUpdated"));
     load();
   };
 
   const handleExecute = async (wf: Workflow) => {
     const exec = await enterpriseWorkflowsApi.execute(wf.id);
-    message.success(`Execution started: ${exec.id}`);
+    message.success(t("enterprise.workflows.executionStarted", { id: exec.id }));
   };
 
   const handleDelete = async (id: string) => {
     await enterpriseWorkflowsApi.delete(id);
-    message.success("Workflow deleted");
+    message.success(t("enterprise.workflows.deleteSuccess"));
     load();
   };
 
   const columns = [
-    { title: "Name", dataIndex: "name", key: "name", ellipsis: true },
+    { title: t("enterprise.workflows.name"), dataIndex: "name", key: "name", ellipsis: true },
     {
-      title: "Category",
+      title: t("enterprise.workflows.category"),
       dataIndex: "category",
       key: "category",
-      render: (c: WorkflowCategory) => <Tag color={CATEGORY_COLOR[c]}>{c}</Tag>,
+      render: (c: WorkflowCategory) => <Tag color={CATEGORY_COLOR[c]}>{t(`enterprise.workflows.category.${c}`)}</Tag>,
     },
     {
-      title: "Status",
+      title: t("enterprise.workflows.status"),
       dataIndex: "status",
       key: "status",
-      render: (s: WorkflowStatus) => <Tag color={STATUS_COLOR[s]}>{s}</Tag>,
+      render: (s: WorkflowStatus) => <Tag color={STATUS_COLOR[s]}>{t(`enterprise.workflows.status.${s}`)}</Tag>,
     },
-    { title: "Version", dataIndex: "version", key: "version", width: 80 },
-    { title: "Description", dataIndex: "description", key: "description", ellipsis: true },
+    { title: t("enterprise.workflows.version"), dataIndex: "version", key: "version", width: 80 },
+    { title: t("enterprise.workflows.description"), dataIndex: "description", key: "description", ellipsis: true },
     {
-      title: "Actions",
+      title: t("common.actions"),
       key: "actions",
       render: (_: unknown, record: Workflow) => (
         <Space>
@@ -107,18 +109,18 @@ export default function WorkflowList() {
             type={record.status === "active" ? "default" : "primary"}
             onClick={() => handleActivate(record)}
           >
-            {record.status === "active" ? "Deactivate" : "Activate"}
+            {record.status === "active" ? t("enterprise.workflows.deactivate") : t("enterprise.workflows.activate")}
           </Button>
-          <Tooltip title={record.status !== "active" ? "Activate first" : ""}>
+          <Tooltip title={record.status !== "active" ? t("enterprise.workflows.activateFirst") : ""}>
             <Button
               size="small"
               icon={<PlayCircleOutlined />}
               disabled={record.status !== "active"}
               onClick={() => handleExecute(record)}
-            >Run</Button>
+            >{t("enterprise.workflows.run")}</Button>
           </Tooltip>
-          <Popconfirm title="Delete workflow?" onConfirm={() => handleDelete(record.id)}>
-            <Button size="small" danger icon={<DeleteOutlined />}>Delete</Button>
+          <Popconfirm title={t("enterprise.workflows.deleteConfirm")} onConfirm={() => handleDelete(record.id)}>
+            <Button size="small" danger icon={<DeleteOutlined />}>{t("common.delete")}</Button>
           </Popconfirm>
         </Space>
       ),
@@ -128,29 +130,29 @@ export default function WorkflowList() {
   return (
     <div style={{ padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>Workflow Management</Title>
+        <Title level={4} style={{ margin: 0 }}>{t("enterprise.workflows.title")}</Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-          New Workflow
+          {t("enterprise.workflows.addWorkflow")}
         </Button>
       </div>
 
       <Space style={{ marginBottom: 16 }}>
         <Select
-          placeholder="Category"
+          placeholder={t("enterprise.workflows.category")}
           allowClear
           style={{ width: 160 }}
           onChange={(v) => setCategoryFilter(v)}
           options={(["dify", "dify_chatflow", "dify_agent", "internal"] as WorkflowCategory[]).map(
-            (c) => ({ label: <Tag color={CATEGORY_COLOR[c]}>{c}</Tag>, value: c })
+            (c) => ({ label: <Tag color={CATEGORY_COLOR[c]}>{t(`enterprise.workflows.category.${c}`)}</Tag>, value: c })
           )}
         />
         <Select
-          placeholder="Status"
+          placeholder={t("enterprise.workflows.status")}
           allowClear
           style={{ width: 120 }}
           onChange={(v) => setStatusFilter(v)}
           options={(["draft", "active", "archived"] as WorkflowStatus[]).map(
-            (s) => ({ label: <Tag color={STATUS_COLOR[s]}>{s}</Tag>, value: s })
+            (s) => ({ label: <Tag color={STATUS_COLOR[s]}>{t(`enterprise.workflows.status.${s}`)}</Tag>, value: s })
           )}
         />
       </Space>
@@ -165,23 +167,25 @@ export default function WorkflowList() {
       />
 
       <Modal
-        title="Create Workflow"
+        title={t("enterprise.workflows.createWorkflow")}
         open={createOpen}
         onCancel={() => { setCreateOpen(false); form.resetFields(); }}
         onOk={() => form.validateFields().then(handleCreate)}
+        okText={t("common.ok")}
+        cancelText={t("common.cancel")}
         destroyOnClose
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="name" label="Name" rules={[{ required: true }]}><Input /></Form.Item>
-          <Form.Item name="category" label="Category" initialValue="internal" rules={[{ required: true }]}>
+          <Form.Item name="name" label={t("enterprise.workflows.name")} rules={[{ required: true, message: t("enterprise.workflows.nameRequired") }]}><Input /></Form.Item>
+          <Form.Item name="category" label={t("enterprise.workflows.category")} initialValue="internal" rules={[{ required: true }]}>
             <Select options={[
-              { label: "Internal", value: "internal" },
-              { label: "Dify", value: "dify" },
-              { label: "Dify Chatflow", value: "dify_chatflow" },
-              { label: "Dify Agent", value: "dify_agent" },
+              { label: t("enterprise.workflows.category.internal"), value: "internal" },
+              { label: t("enterprise.workflows.category.dify"), value: "dify" },
+              { label: t("enterprise.workflows.category.dify_chatflow"), value: "dify_chatflow" },
+              { label: t("enterprise.workflows.category.dify_agent"), value: "dify_agent" },
             ]} />
           </Form.Item>
-          <Form.Item name="description" label="Description"><Input.TextArea rows={2} /></Form.Item>
+          <Form.Item name="description" label={t("enterprise.workflows.description")}><Input.TextArea rows={2} /></Form.Item>
         </Form>
       </Modal>
     </div>

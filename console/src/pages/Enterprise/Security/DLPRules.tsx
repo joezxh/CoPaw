@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Table, Button, Space, Modal, Form, Input, Select, Switch, message, Tag, Tabs } from "antd";
 import { useRequest } from "ahooks";
 import {
@@ -15,6 +16,7 @@ const { Option } = Select;
 const { TabPane } = Tabs;
 
 const DLPRules: React.FC = () => {
+  const { t } = useTranslation();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingRule, setEditingRule] = useState<DLPRule | null>(null);
   const [form] = Form.useForm();
@@ -40,14 +42,14 @@ const DLPRules: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     Modal.confirm({
-      title: "Are you sure you want to delete this rule?",
+      title: t("enterprise.dlp.deleteConfirm"),
       onOk: async () => {
         try {
           await deleteRule(id);
-          message.success("Rule deleted successfully");
+          message.success(t("enterprise.dlp.deleteSuccess"));
           refreshRules();
         } catch (error: any) {
-          message.error(error.message || "Failed to delete rule");
+          message.error(error.message || t("enterprise.dlp.deleteFailed"));
         }
       },
     });
@@ -56,10 +58,10 @@ const DLPRules: React.FC = () => {
   const handleToggleStatus = async (id: string, is_active: boolean) => {
     try {
       await updateRule(id, { is_active });
-      message.success("Rule status updated");
+      message.success(t("enterprise.dlp.statusUpdated"));
       refreshRules();
     } catch (error: any) {
-      message.error(error.message || "Failed to update rule status");
+      message.error(error.message || t("enterprise.dlp.updateFailed"));
     }
   };
 
@@ -68,10 +70,10 @@ const DLPRules: React.FC = () => {
       const values = await form.validateFields();
       if (editingRule && editingRule.id) {
         await updateRule(editingRule.id, values);
-        message.success("Rule updated successfully");
+        message.success(t("enterprise.dlp.updateSuccess"));
       } else {
         await createRule(values);
-        message.success("Rule created successfully");
+        message.success(t("enterprise.dlp.createSuccess"));
       }
       setIsModalVisible(false);
       refreshRules();
@@ -88,15 +90,15 @@ const DLPRules: React.FC = () => {
       alert: "warning",
       block: "error",
     };
-    return <Tag color={colorMap[action] || "default"}>{action.toUpperCase()}</Tag>;
+    return <Tag color={colorMap[action] || "default"}>{t(`enterprise.dlp.action.${action}`)}</Tag>;
   };
 
   const customRuleColumns = [
-    { title: "Rule Name", dataIndex: "rule_name", key: "rule_name" },
-    { title: "Description", dataIndex: "description", key: "description" },
-    { title: "Action", dataIndex: "action", key: "action", render: renderActionTag },
+    { title: t("enterprise.dlp.ruleName"), dataIndex: "rule_name", key: "rule_name" },
+    { title: t("enterprise.dlp.description"), dataIndex: "description", key: "description" },
+    { title: t("enterprise.dlp.action"), dataIndex: "action", key: "action", render: renderActionTag },
     {
-      title: "Status",
+      title: t("enterprise.dlp.status"),
       key: "is_active",
       render: (_: any, record: DLPRule) => (
         <Switch
@@ -106,36 +108,36 @@ const DLPRules: React.FC = () => {
       ),
     },
     {
-      title: "Actions",
+      title: t("common.actions"),
       key: "actions",
       render: (_: any, record: DLPRule) => (
         <Space size="middle">
-          <Button type="link" onClick={() => handleEdit(record)}>Edit</Button>
-          <Button type="link" danger onClick={() => handleDelete(record.id as string)}>Delete</Button>
+          <Button type="link" onClick={() => handleEdit(record)}>{t("common.edit")}</Button>
+          <Button type="link" danger onClick={() => handleDelete(record.id as string)}>{t("common.delete")}</Button>
         </Space>
       ),
     },
   ];
 
   const builtinRuleColumns = [
-    { title: "Built-in Rule Name", dataIndex: "rule_name", key: "rule_name" },
-    { title: "Description", dataIndex: "description", key: "description" },
-    { title: "Action", dataIndex: "action", key: "action", render: renderActionTag },
-    { title: "Pattern", dataIndex: "pattern_regex", key: "pattern_regex", render: (p: string) => <code>{p}</code> },
+    { title: t("enterprise.dlp.builtinRuleName"), dataIndex: "rule_name", key: "rule_name" },
+    { title: t("enterprise.dlp.description"), dataIndex: "description", key: "description" },
+    { title: t("enterprise.dlp.action"), dataIndex: "action", key: "action", render: renderActionTag },
+    { title: t("enterprise.dlp.pattern"), dataIndex: "pattern_regex", key: "pattern_regex", render: (p: string) => <code>{p}</code> },
   ];
 
   const eventColumns = [
-    { title: "Triggered At", dataIndex: "triggered_at", key: "triggered_at", render: (text: string) => new Date(text).toLocaleString() },
-    { title: "Rule", dataIndex: "rule_name", key: "rule_name" },
-    { title: "Action Taken", dataIndex: "action_taken", key: "action_taken", render: renderActionTag },
-    { title: "Context Path", dataIndex: "context_path", key: "context_path" },
-    { title: "Summary", dataIndex: "content_summary", key: "content_summary" },
+    { title: t("enterprise.dlp.triggeredAt"), dataIndex: "triggered_at", key: "triggered_at", render: (text: string) => new Date(text).toLocaleString() },
+    { title: t("enterprise.dlp.rule"), dataIndex: "rule_name", key: "rule_name" },
+    { title: t("enterprise.dlp.actionTaken"), dataIndex: "action_taken", key: "action_taken", render: renderActionTag },
+    { title: t("enterprise.dlp.contextPath"), dataIndex: "context_path", key: "context_path" },
+    { title: t("enterprise.dlp.contentSummary"), dataIndex: "content_summary", key: "content_summary" },
   ];
 
   return (
     <div style={{ padding: 24 }}>
       <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2>Data Loss Prevention (DLP)</h2>
+        <h2>{t("enterprise.dlp.title")}</h2>
         <Button
           type="primary"
           onClick={() => {
@@ -144,41 +146,48 @@ const DLPRules: React.FC = () => {
             setIsModalVisible(true);
           }}
         >
-          Create Custom Rule
+          {t("enterprise.dlp.createCustomRule")}
         </Button>
       </div>
 
       <Tabs defaultActiveKey="custom">
-        <TabPane tab="Custom Rules" key="custom">
+        <TabPane tab={t("enterprise.dlp.customRules")} key="custom">
           <Table columns={customRuleColumns} dataSource={rulesData?.items || []} rowKey="id" loading={rulesLoading} />
         </TabPane>
-        <TabPane tab="Built-in Rules" key="builtin">
+        <TabPane tab={t("enterprise.dlp.builtinRules")} key="builtin">
           <Table columns={builtinRuleColumns} dataSource={builtinRules || []} rowKey="rule_name" loading={builtinLoading} pagination={false} />
         </TabPane>
-        <TabPane tab="Violation Events" key="events">
+        <TabPane tab={t("enterprise.dlp.violationEvents")} key="events">
           <Table columns={eventColumns} dataSource={eventsData?.items || []} rowKey="id" loading={eventsLoading} />
         </TabPane>
       </Tabs>
 
-      <Modal title={editingRule ? "Edit Rule" : "Create Rule"} open={isModalVisible} onOk={handleModalOk} onCancel={() => setIsModalVisible(false)}>
+      <Modal
+        title={editingRule ? t("enterprise.dlp.editRule") : t("enterprise.dlp.createRule")}
+        open={isModalVisible}
+        onOk={handleModalOk}
+        onCancel={() => setIsModalVisible(false)}
+        okText={t("common.ok")}
+        cancelText={t("common.cancel")}
+      >
         <Form form={form} layout="vertical" initialValues={{ action: "alert", is_active: true }}>
-          <Form.Item name="rule_name" label="Rule Name" rules={[{ required: true }]}>
+          <Form.Item name="rule_name" label={t("enterprise.dlp.ruleName")} rules={[{ required: true, message: t("enterprise.dlp.ruleNameRequired") }]}>
             <Input disabled={!!editingRule} />
           </Form.Item>
-          <Form.Item name="description" label="Description">
+          <Form.Item name="description" label={t("enterprise.dlp.description")}>
             <Input.TextArea />
           </Form.Item>
-          <Form.Item name="pattern_regex" label="Regex Pattern" rules={[{ required: true }]}>
+          <Form.Item name="pattern_regex" label={t("enterprise.dlp.regexPattern")} rules={[{ required: true, message: t("enterprise.dlp.regexPatternRequired") }]}>
             <Input />
           </Form.Item>
-          <Form.Item name="action" label="Action" rules={[{ required: true }]}>
+          <Form.Item name="action" label={t("enterprise.dlp.action")} rules={[{ required: true }]}>
             <Select>
-              <Option value="mask">Mask (Redact)</Option>
-              <Option value="alert">Alert Log Only</Option>
-              <Option value="block">Block Request</Option>
+              <Option value="mask">{t("enterprise.dlp.action.mask")}</Option>
+              <Option value="alert">{t("enterprise.dlp.action.alert")}</Option>
+              <Option value="block">{t("enterprise.dlp.action.block")}</Option>
             </Select>
           </Form.Item>
-          <Form.Item name="is_active" label="Status" valuePropName="checked">
+          <Form.Item name="is_active" label={t("enterprise.dlp.status")} valuePropName="checked">
             <Switch />
           </Form.Item>
         </Form>

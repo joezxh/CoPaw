@@ -16,7 +16,8 @@ import "dayjs/locale/zh-cn";
 import "dayjs/locale/ja";
 import "dayjs/locale/ru";
 dayjs.extend(relativeTime);
-import MainLayout from "./layouts/MainLayout";
+import DefaultLayout from "./layouts/default";
+import CopawLayout from "./layouts/copaw";
 import { ThemeProvider, useTheme } from "./contexts/ThemeContext";
 import LoginPage from "./pages/Login";
 import { authApi } from "./api/modules/auth";
@@ -148,6 +149,13 @@ function AppInner() {
     antdLocaleMap[lang] ?? enUS,
   );
 
+  // 根据环境变量选择布局
+  // VITE_APP_EDITION=enterprise → DefaultLayout (企业版，带权限控制)
+  // VITE_APP_EDITION=personal  → CopawLayout (个人版，无权限控制)
+  // 未设置或默认为 enterprise
+  const appEdition = import.meta.env.VITE_APP_EDITION || "enterprise";
+  const LayoutComponent = appEdition === "personal" ? CopawLayout : DefaultLayout;
+
   useEffect(() => {
     if (!localStorage.getItem("language")) {
       languageApi
@@ -205,7 +213,7 @@ function AppInner() {
               path="/*"
               element={
                 <AuthGuard>
-                  <MainLayout />
+                  <LayoutComponent />
                 </AuthGuard>
               }
             />

@@ -20,7 +20,7 @@ from ...db.models.dlp import DLPRule, DLPEvent
 from ...enterprise.middleware import get_current_user
 from ...enterprise.dlp_service import _BUILTIN_RULES
 
-router = APIRouter(prefix="/api/enterprise/dlp", tags=["enterprise-dlp"])
+router = APIRouter(prefix="/enterprise/dlp", tags=["enterprise-dlp"])
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────

@@ -15,15 +15,15 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .base import Base, TenantAwareMixin, TimestampMixin, UUIDPrimaryKeyMixin
 
 if TYPE_CHECKING:
-    from .user import User, UserGroup
+    from .user import User
     from .organization import Department
     from .workflow import Workflow
 
 
 class Task(Base, UUIDPrimaryKeyMixin, TimestampMixin, TenantAwareMixin):
-    """Enterprise task — assignable to users, groups, or departments.
+    """Enterprise task — assignable to users or departments.
     
-    任务表 - 企业任务管理,可分配给用户、用户组或部门
+    任务表 - 企业任务管理,可分配给用户或部门
     """
 
     __tablename__ = "ai_tasks"
@@ -56,12 +56,6 @@ class Task(Base, UUIDPrimaryKeyMixin, TimestampMixin, TenantAwareMixin):
         ForeignKey("sys_users.id", ondelete="SET NULL"),
         nullable=True,
         comment="被分配用户ID"
-    )
-    assignee_group_id: Mapped[Optional[uuid.UUID]] = mapped_column(
-        UUID(as_uuid=True),
-        ForeignKey("sys_user_groups.id", ondelete="SET NULL"),
-        nullable=True,
-        comment="被分配用户组ID"
     )
     department_id: Mapped[Optional[uuid.UUID]] = mapped_column(
         UUID(as_uuid=True),

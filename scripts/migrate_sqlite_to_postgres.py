@@ -69,14 +69,15 @@ class SQLiteToPostgresMigrator:
     async def _migrate_agents(self, sqlite_conn) -> int:
         """迁移Agent配置"""
         from copaw.db.models.storage_meta import AgentConfig
-        from copaw.db.session import async_session_maker
+        from copaw.db.postgresql import get_database_manager
 
         cursor = sqlite_conn.cursor()
         cursor.execute("SELECT * FROM agents")
         agents = cursor.fetchall()
 
         count = 0
-        async with async_session_maker() as session:
+        db_manager = get_database_manager()
+        async with db_manager.session() as session:
             for agent in agents:
                 config = AgentConfig(
                     tenant_id=self.tenant_id,
@@ -102,10 +103,11 @@ class SQLiteToPostgresMigrator:
             return 0
 
         from copaw.db.models.storage_meta import SkillConfig
-        from copaw.db.session import async_session_maker
+        from copaw.db.postgresql import get_database_manager
 
         count = 0
-        async with async_session_maker() as session:
+        db_manager = get_database_manager()
+        async with db_manager.session() as session:
             for skill_dir in skill_pool.iterdir():
                 if not skill_dir.is_dir():
                     continue
@@ -136,7 +138,7 @@ class SQLiteToPostgresMigrator:
     async def _migrate_conversations(self, sqlite_conn) -> tuple[int, int]:
         """迁移对话和消息"""
         from copaw.db.models.storage_meta import Conversation, ConversationMessage
-        from copaw.db.session import async_session_maker
+        from copaw.db.postgresql import get_database_manager
 
         cursor = sqlite_conn.cursor()
         cursor.execute("SELECT * FROM conversations")
@@ -145,7 +147,8 @@ class SQLiteToPostgresMigrator:
         conv_count = 0
         msg_count = 0
 
-        async with async_session_maker() as session:
+        db_manager = get_database_manager()
+        async with db_manager.session() as session:
             for conv in conversations:
                 conversation = Conversation(
                     tenant_id=self.tenant_id,

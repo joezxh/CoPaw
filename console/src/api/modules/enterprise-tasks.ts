@@ -36,7 +36,7 @@ export const enterpriseTasksApi = {
     Object.entries(params || {}).forEach(([k, v]) => {
       if (v !== undefined) q.set(k, String(v));
     });
-    return request<TaskListResponse>(`/api/enterprise/tasks?${q}`);
+    return request<TaskListResponse>(`/enterprise/tasks?${q}`);
   },
 
   create: (data: {
@@ -48,38 +48,38 @@ export const enterpriseTasksApi = {
     workflow_id?: string;
     metadata?: Record<string, unknown>;
   }) =>
-    request<Task>("/api/enterprise/tasks", {
+    request<Task>("/enterprise/tasks", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
-  get: (taskId: string) => request<Task>(`/api/enterprise/tasks/${taskId}`),
+  get: (taskId: string) => request<Task>(`/enterprise/tasks/${taskId}`),
 
   update: (taskId: string, data: Partial<Pick<Task, "title" | "description" | "priority" | "assignee_id" | "due_date">>) =>
-    request<Task>(`/api/enterprise/tasks/${taskId}`, {
+    request<Task>(`/enterprise/tasks/${taskId}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   changeStatus: (taskId: string, status: TaskStatus) =>
-    request<Task>(`/api/enterprise/tasks/${taskId}/status`, {
+    request<Task>(`/enterprise/tasks/${taskId}/status`, {
       method: "PUT",
       body: JSON.stringify({ status }),
     }),
 
   delete: (taskId: string) =>
-    request<{ detail: string }>(`/api/enterprise/tasks/${taskId}`, {
+    request<{ detail: string }>(`/enterprise/tasks/${taskId}`, {
       method: "DELETE",
     }),
 
   listComments: (taskId: string) =>
     request<{ id: string; content: string; author_id?: string; created_at: string }[]>(
-      `/api/enterprise/tasks/${taskId}/comments`
+      `/enterprise/tasks/${taskId}/comments`
     ),
 
   addComment: (taskId: string, content: string) =>
     request<{ id: string; content: string; created_at: string }>(
-      `/api/enterprise/tasks/${taskId}/comments`,
+      `/enterprise/tasks/${taskId}/comments`,
       { method: "POST", body: JSON.stringify({ content }) }
     ),
 };

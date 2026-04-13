@@ -15,7 +15,7 @@ from ...db.postgresql import get_db_session
 from ...enterprise.audit_service import AuditService
 from ...enterprise.middleware import get_current_user
 
-router = APIRouter(prefix="/api/enterprise/audit", tags=["enterprise-audit"])
+router = APIRouter(prefix="/enterprise/audit", tags=["enterprise-audit"])
 
 
 @router.get("")

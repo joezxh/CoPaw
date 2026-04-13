@@ -1,5 +1,60 @@
 {
   "schema_version": "workspace-skill-manifest.v1",
-  "version": 1775909550984,
-  "skills": {}
+  "version": 1776072047724,
+  "skills": {
+    "channel_message": {
+      "enabled": true,
+      "channels": [
+        "all"
+      ],
+      "source": "builtin",
+      "metadata": {
+        "name": "channel_message",
+        "description": "Use this skill to proactively send a one-way message to a user/session/channel, usually only when the user explicitly asks to send to a channel/session or when proactive notification is needed. First query sessions with copaw chats list, then push with copaw channels send. | 当需要主动向用户/会话/频道单向推送消息时使用，通常仅在用户明确要求发往某个 channel / 会话，或需要主动通知时使用；先用 copaw chats list 查 session，再用 copaw channels send 推送",
+        "version_text": "1.1",
+        "commit_text": "",
+        "signature": "",
+        "source": "builtin",
+        "protected": false,
+        "requirements": {
+          "require_bins": [],
+          "require_envs": []
+        },
+        "updated_at": "2026-04-11T05:48:50.312600Z"
+      },
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T05:48:50.312600Z",
+      "config": {}
+    },
+    "invoice_ocr": {
+      "enabled": true,
+      "channels": [
+        "all"
+      ],
+      "source": "builtin",
+      "metadata": {
+        "name": "invoice_ocr",
+        "description": "Extracts structured data from invoice images/PDFs.",
+        "version_text": "1.0.0",
+        "commit_text": "",
+        "signature": "",
+        "source": "builtin",
+        "protected": false,
+        "requirements": {
+          "require_bins": [],
+          "require_envs": []
+        },
+        "updated_at": "2026-04-11T09:10:09.705506Z"
+      },
+      "requirements": {
+        "require_bins": [],
+        "require_envs": []
+      },
+      "updated_at": "2026-04-11T09:10:09.705506Z",
+      "config": {}
+    }
+  }
 }

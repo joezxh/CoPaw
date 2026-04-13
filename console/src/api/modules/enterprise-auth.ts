@@ -35,38 +35,38 @@ export interface CurrentUser {
 
 export const enterpriseAuthApi = {
   login: (data: LoginRequest) =>
-    request<LoginResponse>("/api/enterprise/auth/login", {
+    request<LoginResponse>("/enterprise/auth/login", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
   register: (data: RegisterRequest) =>
     request<{ id: string; username: string; email?: string }>(
-      "/api/enterprise/auth/register",
+      "/enterprise/auth/register",
       { method: "POST", body: JSON.stringify(data) }
     ),
 
   logout: () =>
-    request<{ detail: string }>("/api/enterprise/auth/logout", {
+    request<{ detail: string }>("/enterprise/auth/logout", {
       method: "POST",
     }),
 
-  me: () => request<CurrentUser>("/api/enterprise/auth/me"),
+  me: () => request<CurrentUser>("/enterprise/auth/me"),
 
   changePassword: (data: { current_password: string; new_password: string }) =>
-    request<{ detail: string }>("/api/enterprise/auth/password", {
+    request<{ detail: string }>("/enterprise/auth/password", {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   setupMfa: () =>
     request<{ secret: string; otpauth_url: string }>(
-      "/api/enterprise/auth/mfa/setup",
+      "/enterprise/auth/mfa/setup",
       { method: "POST" }
     ),
 
   verifyMfa: (data: { secret: string; code: string }) =>
-    request<{ detail: string }>("/api/enterprise/auth/mfa/verify", {
+    request<{ detail: string }>("/enterprise/auth/mfa/verify", {
       method: "POST",
       body: JSON.stringify(data),
     }),

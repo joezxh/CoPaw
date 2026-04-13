@@ -38,6 +38,6 @@ export const enterpriseAuditApi = {
     Object.entries(params || {}).forEach(([k, v]) => {
       if (v !== undefined) q.set(k, String(v));
     });
-    return request<AuditLogResponse>(`/api/enterprise/audit?${q}`);
+    return request<AuditLogResponse>(`/enterprise/audit?${q}`);
   },
 };

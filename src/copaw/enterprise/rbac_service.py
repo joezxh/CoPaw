@@ -247,6 +247,66 @@ class RBACService:
             (await session.scalars(select(Role).where(Role.id.in_(role_ids)))).all()
         )
 
+    @staticmethod
+    async def get_user_permissions(
+        session: AsyncSession, user_id: uuid.UUID
+    ) -> list[Permission]:
+        """获取用户的完整权限对象列表（用于前端权限控制）"""
+        # 获取用户角色
+        user_roles = (
+            await session.scalars(
+                select(UserRole).where(UserRole.user_id == user_id)
+            )
+        ).all()
+
+        role_ids: set[uuid.UUID] = {ur.role_id for ur in user_roles}
+
+        # 展开角色层次结构（最多5级）
+        expanded: set[uuid.UUID] = set(role_ids)
+        queue = list(role_ids)
+        for _ in range(5):
+            if not queue:
+                break
+            roles = (
+                await session.scalars(
+                    select(Role).where(
+                        Role.id.in_(queue), Role.parent_role_id.is_not(None)
+                    )
+                )
+            ).all()
+            new_parents = {
+                r.parent_role_id
+                for r in roles
+                if r.parent_role_id and r.parent_role_id not in expanded
+            }
+            expanded |= new_parents
+            queue = list(new_parents)
+
+        if not expanded:
+            return []
+
+        # 获取所有角色关联的权限
+        role_perms = (
+            await session.scalars(
+                select(RolePermission).where(
+                    RolePermission.role_id.in_(expanded)
+                )
+            )
+        ).all()
+
+        perm_ids = {rp.permission_id for rp in role_perms}
+        if not perm_ids:
+            return []
+
+        # 返回完整的 Permission 对象
+        permissions = (
+            await session.scalars(
+                select(Permission).where(Permission.id.in_(perm_ids))
+            )
+        ).all()
+
+        return list(permissions)
+
 
 # ── Helpers ──────────────────────────────────────────────────────────────────
 

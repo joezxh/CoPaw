@@ -42,7 +42,7 @@ export const enterpriseWorkflowsApi = {
       if (v !== undefined) q.set(k, String(v));
     });
     return request<{ total: number; items: Workflow[] }>(
-      `/api/enterprise/workflows?${q}`
+      `/enterprise/workflows?${q}`
     );
   },
 
@@ -52,12 +52,12 @@ export const enterpriseWorkflowsApi = {
     description?: string;
     definition?: Record<string, unknown>;
   }) =>
-    request<Workflow>("/api/enterprise/workflows", {
+    request<Workflow>("/enterprise/workflows", {
       method: "POST",
       body: JSON.stringify(data),
     }),
 
-  get: (id: string) => request<Workflow>(`/api/enterprise/workflows/${id}`),
+  get: (id: string) => request<Workflow>(`/enterprise/workflows/${id}`),
 
   update: (
     id: string,
@@ -69,18 +69,18 @@ export const enterpriseWorkflowsApi = {
       category: WorkflowCategory;
     }>
   ) =>
-    request<Workflow>(`/api/enterprise/workflows/${id}`, {
+    request<Workflow>(`/enterprise/workflows/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),
     }),
 
   delete: (id: string) =>
-    request<{ detail: string }>(`/api/enterprise/workflows/${id}`, {
+    request<{ detail: string }>(`/enterprise/workflows/${id}`, {
       method: "DELETE",
     }),
 
   execute: (id: string, inputData?: Record<string, unknown>) =>
-    request<WorkflowExecution>(`/api/enterprise/workflows/${id}/execute`, {
+    request<WorkflowExecution>(`/enterprise/workflows/${id}/execute`, {
       method: "POST",
       body: JSON.stringify({ input_data: inputData }),
     }),
@@ -91,7 +91,7 @@ export const enterpriseWorkflowsApi = {
       if (v !== undefined) q.set(k, String(v));
     });
     return request<WorkflowExecution[]>(
-      `/api/enterprise/workflows/${id}/executions?${q}`
+      `/enterprise/workflows/${id}/executions?${q}`
     );
   },
 };

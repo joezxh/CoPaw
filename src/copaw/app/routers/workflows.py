@@ -20,7 +20,7 @@ from ...enterprise.audit_service import AuditService, AuditAction
 from ...enterprise.middleware import get_current_user
 from sqlalchemy import select
 
-router = APIRouter(prefix="/api/enterprise/workflows", tags=["enterprise-workflows"])
+router = APIRouter(prefix="/enterprise/workflows", tags=["enterprise-workflows"])
 
 
 class WorkflowCreateRequest(BaseModel):

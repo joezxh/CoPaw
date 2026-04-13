@@ -2,8 +2,10 @@
 """
 Departments (org hierarchy) API Router — pure PostgreSQL, recursive CTE.
 GET/POST/PUT/DELETE /api/enterprise/departments
-GET                 /api/enterprise/departments/{id}/members
-GET                 /api/enterprise/departments/tree
+GET/POST             /api/enterprise/departments/{id}/members
+DELETE               /api/enterprise/departments/{id}/members/{user_id}
+GET                  /api/enterprise/departments/tree
+GET                  /api/enterprise/departments/{id}/stats
 """
 from __future__ import annotations
 
@@ -12,15 +14,16 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
-from sqlalchemy import select, text
+from sqlalchemy import select, func, text
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from ...db.postgresql import get_db_session
 from ...db.models.organization import Department
 from ...db.models.user import User
 from ...enterprise.middleware import get_current_user
+from ...enterprise.audit_service import AuditService
 
-router = APIRouter(prefix="/api/enterprise/departments", tags=["enterprise-departments"])
+router = APIRouter(prefix="/enterprise/departments", tags=["enterprise-departments"])
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────
@@ -39,6 +42,10 @@ class DeptUpdateRequest(BaseModel):
     description: Optional[str] = None
 
 
+class AddMembersRequest(BaseModel):
+    user_ids: list[str]
+
+
 def _dept_to_dict(d: Department) -> dict:
     return {
         "id": str(d.id),
@@ -51,13 +58,25 @@ def _dept_to_dict(d: Department) -> dict:
     }
 
 
+def build_tree(depts: list[dict]) -> list[dict]:
+    """Build nested tree structure from flat list."""
+    dept_map = {d["id"]: {**d, "children": []} for d in depts}
+    tree = []
+    for dept in depts:
+        if dept["parent_id"]:
+            if dept["parent_id"] in dept_map:
+                dept_map[dept["parent_id"]]["children"].append(dept_map[dept["id"]])
+        else:
+            tree.append(dept_map[dept["id"]])
+    return tree
+
+
 # ── Routes ───────────────────────────────────────────────────────────────────
 
 @router.get("/tree")
 async def get_tree(current_user: dict = Depends(get_current_user)):
-    """Return the full department tree using a recursive CTE."""
+    """Return the full department tree as nested structure."""
     async with get_db_session() as session:
-        # PostgreSQL recursive CTE — returns all departments with full path
         cte_sql = text("""
             WITH RECURSIVE dept_tree AS (
                 SELECT id, name, parent_id, manager_id, level, description,
@@ -75,7 +94,8 @@ async def get_tree(current_user: dict = Depends(get_current_user)):
         """)
         result = await session.execute(cte_sql)
         rows = result.mappings().all()
-        return [dict(r) for r in rows]
+        flat_depts = [dict(r) for r in rows]
+        return build_tree(flat_depts)
 
 
 @router.get("")
@@ -114,6 +134,17 @@ async def create_department(
         )
         session.add(dept)
         await session.flush()
+        
+        await AuditService.log(
+            session,
+            action_type="ORG_CREATE",
+            resource_type="department",
+            resource_id=str(dept.id),
+            result="success",
+            user_id=uuid.UUID(current_user["user_id"]),
+            data_after=_dept_to_dict(dept),
+        )
+        
         return _dept_to_dict(dept)
 
 
@@ -144,6 +175,17 @@ async def update_department(
             dept.manager_id = uuid.UUID(body.manager_id) if body.manager_id else None
         if body.parent_id is not None:
             dept.parent_id = uuid.UUID(body.parent_id) if body.parent_id else None
+        
+        await AuditService.log(
+            session,
+            action_type="ORG_UPDATE",
+            resource_type="department",
+            resource_id=dept_id,
+            result="success",
+            user_id=uuid.UUID(current_user["user_id"]),
+            data_after=_dept_to_dict(dept),
+        )
+        
         return _dept_to_dict(dept)
 
 
@@ -160,6 +202,16 @@ async def delete_department(dept_id: str, current_user: dict = Depends(get_curre
             raise HTTPException(
                 status_code=409, detail="Cannot delete department with sub-departments"
             )
+        
+        await AuditService.log(
+            session,
+            action_type="ORG_DELETE",
+            resource_type="department",
+            resource_id=dept_id,
+            result="success",
+            user_id=uuid.UUID(current_user["user_id"]),
+        )
+        
         await session.delete(dept)
     return {"detail": "Department deleted"}
 
@@ -182,3 +234,89 @@ async def get_members(dept_id: str, current_user: dict = Depends(get_current_use
             }
             for u in users
         ]
+
+
+@router.post("/{dept_id}/members")
+async def add_members(
+    dept_id: str,
+    body: AddMembersRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Batch add users to a department."""
+    async with get_db_session() as session:
+        dept = await session.get(Department, uuid.UUID(dept_id))
+        if not dept:
+            raise HTTPException(status_code=404, detail="Department not found")
+        
+        updated = 0
+        for uid_str in body.user_ids:
+            user = await session.get(User, uuid.UUID(uid_str))
+            if user:
+                user.department_id = uuid.UUID(dept_id)
+                updated += 1
+        
+        await AuditService.log(
+            session,
+            action_type="ORG_MEMBER_ADD",
+            resource_type="department",
+            resource_id=dept_id,
+            result="success",
+            user_id=uuid.UUID(current_user["user_id"]),
+            data_after={"added": updated, "users": body.user_ids},
+        )
+        
+        return {"added": updated, "total_requested": len(body.user_ids)}
+
+
+@router.delete("/{dept_id}/members/{user_id}")
+async def remove_member(
+    dept_id: str,
+    user_id: str,
+    current_user: dict = Depends(get_current_user),
+):
+    """Remove a user from a department."""
+    async with get_db_session() as session:
+        user = await session.get(User, uuid.UUID(user_id))
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        user.department_id = None
+        
+        await AuditService.log(
+            session,
+            action_type="ORG_MEMBER_REMOVE",
+            resource_type="department",
+            resource_id=dept_id,
+            result="success",
+            user_id=uuid.UUID(current_user["user_id"]),
+            data_after={"removed_user": user_id},
+        )
+        
+    return {"detail": "Member removed"}
+
+
+@router.get("/{dept_id}/stats")
+async def get_stats(dept_id: str, current_user: dict = Depends(get_current_user)):
+    """Get department statistics including member count and sub-department count."""
+    async with get_db_session() as session:
+        dept = await session.get(Department, uuid.UUID(dept_id))
+        if not dept:
+            raise HTTPException(status_code=404, detail="Department not found")
+        
+        # Count direct members
+        member_count = await session.scalar(
+            select(func.count()).select_from(User).where(User.department_id == uuid.UUID(dept_id))
+        ) or 0
+        
+        # Count sub-departments
+        sub_dept_count = await session.scalar(
+            select(func.count()).select_from(Department).where(Department.parent_id == uuid.UUID(dept_id))
+        ) or 0
+        
+        return {
+            "id": str(dept.id),
+            "name": dept.name,
+            "member_count": member_count,
+            "sub_department_count": sub_dept_count,
+            "level": dept.level,
+        }

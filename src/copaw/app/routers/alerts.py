@@ -20,7 +20,7 @@ from ...db.models.alert import AlertRule, AlertEvent
 from ...enterprise.middleware import get_current_user
 from ...enterprise.alert_service import notify
 
-router = APIRouter(prefix="/api/enterprise/alerts", tags=["enterprise-alerts"])
+router = APIRouter(prefix="/enterprise/alerts", tags=["enterprise-alerts"])
 
 
 # ── Schemas ──────────────────────────────────────────────────────────────────

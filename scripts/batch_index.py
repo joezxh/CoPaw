@@ -9,8 +9,12 @@ import asyncio
 import hashlib
 import json
 import logging
+import uuid
 from pathlib import Path
-from typing import Optional
+from dotenv import load_dotenv
+
+# 加载 .env 文件
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 
@@ -73,7 +77,7 @@ class BatchIndexer:
     async def _index_agent_configs(self, workspace_dir: Path) -> int:
         """索引Agent配置"""
         from copaw.db.models.storage_meta import AgentConfig
-        from copaw.db.session import async_session_maker
+        from copaw.db.postgresql import get_database_manager
         from copaw.storage.key_builder import StorageKeyBuilder
 
         agent_json = workspace_dir / "agent.json"
@@ -84,20 +88,24 @@ class BatchIndexer:
             data = json.load(f)
 
         content_hash = self._compute_hash(agent_json)
-        workspace_id = workspace_dir.name
+        workspace_dir_name = workspace_dir.name
 
         key = StorageKeyBuilder.build(
             tenant_id=self.tenant_id,
-            workspace_id=workspace_id,
+            department_id=workspace_dir_name,
             category="workspace",
             resource_path="agent.json",
         )
 
-        async with async_session_maker() as session:
+        # 确保工作空间记录存在
+        workspace_uuid = await self._ensure_workspace_exists(workspace_dir_name)
+        
+        db_manager = get_database_manager()
+        async with db_manager.session() as session:
             config = AgentConfig(
                 tenant_id=self.tenant_id,
-                workspace_id=workspace_id,
-                agent_id=data.get("id", workspace_id),
+                workspace_id=workspace_uuid,
+                agent_id=data.get("id", workspace_dir_name),
                 name=data.get("name", "Unknown"),
                 description=data.get("description"),
                 model_provider=data.get("model_provider"),
@@ -106,54 +114,90 @@ class BatchIndexer:
                 content_hash=content_hash,
             )
             session.add(config)
-            await session.commit()
 
         return 1
 
     async def _index_skills(self, workspace_dir: Path) -> int:
-        """索引Skill配置"""
+        """索引Skill配置（全局池 + 工作空间已分配）"""
         from copaw.db.models.storage_meta import SkillConfig
-        from copaw.db.session import async_session_maker
+        from copaw.db.postgresql import get_database_manager
 
-        skill_pool = workspace_dir / "skill_pool"
-        if not skill_pool.exists():
-            return 0
-
+        workspace_uuid = await self._ensure_workspace_exists(workspace_dir.name)
         count = 0
-        for skill_dir in skill_pool.iterdir():
-            if not skill_dir.is_dir():
-                continue
-
-            skill_json = skill_dir / "skill.json"
-            if not skill_json.exists():
-                continue
-
-            with open(skill_json, "r", encoding="utf-8") as f:
-                data = json.load(f)
-
-            from copaw.db.session import async_session_maker
-
-            async with async_session_maker() as session:
-                skill = SkillConfig(
-                    tenant_id=self.tenant_id,
-                    workspace_id=workspace_dir.name,
-                    skill_name=data.get("name", skill_dir.name),
-                    display_name=data.get("display_name"),
-                    description=data.get("description"),
-                    version=data.get("version", "1.0.0"),
-                    source="local",
-                )
-                session.add(skill)
-                await session.commit()
-
-            count += 1
+        
+        # 1. 索引全局 Skill 池（未分配）
+        global_skill_pool = Path("working/skill_pool")
+        if global_skill_pool.exists():
+            for skill_dir in global_skill_pool.iterdir():
+                if not skill_dir.is_dir():
+                    continue
+                    
+                skill_json = skill_dir / "skill.json"
+                if not skill_json.exists():
+                    continue
+                    
+                with open(skill_json, "r", encoding="utf-8") as f:
+                    data = json.load(f)
+                    
+                db_manager = get_database_manager()
+                async with db_manager.session() as session:
+                    skill = SkillConfig(
+                        tenant_id=self.tenant_id,
+                        skill_name=data.get("name", skill_dir.name),
+                        display_name=data.get("display_name"),
+                        description=data.get("description"),
+                        version=data.get("version", "1.0.0"),
+                        source="global_pool",
+                    )
+                    session.add(skill)
+                count += 1
+        
+        # 2. 索引工作空间下已分配到 Agent 的 Skill
+        # 扫描所有 agent 目录
+        agent_json = workspace_dir / "agent.json"
+        if agent_json.exists():
+            with open(agent_json, "r", encoding="utf-8") as f:
+                agent_data = json.load(f)
+            agent_id = agent_data.get("id", workspace_dir.name)
+            
+            # 检查 {agent_id}/skills 目录
+            agent_skills_dir = workspace_dir / agent_id / "skills"
+            if agent_skills_dir.exists():
+                for skill_dir in agent_skills_dir.iterdir():
+                    if not skill_dir.is_dir():
+                        continue
+                        
+                    skill_json = skill_dir / "skill.json"
+                    if not skill_json.exists():
+                        continue
+                        
+                    with open(skill_json, "r", encoding="utf-8") as f:
+                        data = json.load(f)
+                    
+                    # 验证数据格式
+                    if not isinstance(data, dict):
+                        continue
+                        
+                    db_manager = get_database_manager()
+                    async with db_manager.session() as session:
+                        skill = SkillConfig(
+                            tenant_id=self.tenant_id,
+                            workspace_id=workspace_uuid,
+                            skill_name=data.get("name", skill_dir.name),
+                            display_name=data.get("display_name"),
+                            description=data.get("description"),
+                            version=data.get("version", "1.0.0"),
+                            source="agent_assigned",
+                        )
+                        session.add(skill)
+                    count += 1
 
         return count
 
     async def _index_conversations(self, workspace_dir: Path) -> int:
         """索引对话"""
         from copaw.db.models.storage_meta import Conversation
-        from copaw.db.session import async_session_maker
+        from copaw.db.postgresql import get_database_manager
 
         chats_json = workspace_dir / "chats.json"
         if not chats_json.exists():
@@ -162,13 +206,17 @@ class BatchIndexer:
         with open(chats_json, "r", encoding="utf-8") as f:
             data = json.load(f)
 
+        # 确保工作空间记录存在
+        workspace_uuid = await self._ensure_workspace_exists(workspace_dir.name)
+
         # chats.json 格式: {chat_id: {title, messages, ...}}
         count = 0
-        async with async_session_maker() as session:
+        db_manager = get_database_manager()
+        async with db_manager.session() as session:
             for chat_id, chat_data in data.items():
                 conversation = Conversation(
                     tenant_id=self.tenant_id,
-                    workspace_id=workspace_dir.name,
+                    workspace_id=workspace_uuid,
                     chat_id=chat_id,
                     title=chat_data.get("title"),
                     message_count=len(chat_data.get("messages", [])),
@@ -176,27 +224,85 @@ class BatchIndexer:
                 session.add(conversation)
                 count += 1
 
-            await session.commit()
 
         return count
+
+    async def _ensure_workspace_exists(self, workspace_name: str) -> uuid.UUID:
+        """确保租户和工作空间记录存在，如果不存在则创建
+        
+        Args:
+            workspace_name: 工作空间名称
+            
+        Returns:
+            工作空间 UUID
+        """
+        from copaw.db.models.workspace import Workspace
+        from copaw.db.models.tenant import Tenant
+        from copaw.db.postgresql import get_database_manager
+        from sqlalchemy import select
+        
+        db_manager = get_database_manager()
+        async with db_manager.session() as session:
+            # 1. 确保租户存在
+            tenant_result = await session.execute(
+                select(Tenant).where(Tenant.id == self.tenant_id)
+            )
+            tenant = tenant_result.scalar_one_or_none()
+            
+            if not tenant:
+                # 创建默认租户
+                tenant = Tenant(
+                    id=self.tenant_id,
+                    name=self.tenant_id,
+                    is_active=True,
+                )
+                session.add(tenant)
+                await session.flush()  # 立即获取 ID
+            
+            # 2. 查询工作空间是否存在
+            ws_result = await session.execute(
+                select(Workspace).where(
+                    Workspace.name == workspace_name,
+                    Workspace.tenant_id == self.tenant_id,
+                )
+            )
+            workspace = ws_result.scalar_one_or_none()
+            
+            if workspace:
+                return workspace.id
+            
+            # 3. 创建工作空间
+            workspace = Workspace(
+                tenant_id=self.tenant_id,
+                name=workspace_name,
+                description=f"Auto-created workspace: {workspace_name}",
+            )
+            session.add(workspace)
+            await session.flush()  # 确保 ID 已生成
+            # session 会自动 commit
+            return workspace.id
 
     async def _index_memory_docs(self, workspace_dir: Path) -> int:
         """索引记忆文档"""
         from copaw.db.models.storage_meta import MemoryDocument
-        from copaw.db.session import async_session_maker
+        from copaw.db.postgresql import get_database_manager
 
         memory_dir = workspace_dir / "memory"
         if not memory_dir.exists():
             return 0
 
+        # 确保工作空间记录存在
+        workspace_uuid = await self._ensure_workspace_exists(workspace_dir.name)
+
         count = 0
         for md_file in memory_dir.glob("*.md"):
             content_hash = self._compute_hash(md_file)
 
-            async with async_session_maker() as session:
+            db_manager = get_database_manager()
+            async with db_manager.session() as session:
                 doc = MemoryDocument(
                     tenant_id=self.tenant_id,
-                    workspace_id=workspace_dir.name,
+                    workspace_id=workspace_uuid,
                     doc_type="memory",
                     title=md_file.stem,
                     storage_key=f"{workspace_dir.name}/memory/{md_file.name}",
@@ -204,8 +310,7 @@ class BatchIndexer:
                     file_size=md_file.stat().st_size,
                 )
                 session.add(doc)
-                await session.commit()
-
+    
             count += 1
 
         return count
@@ -223,6 +328,7 @@ class BatchIndexer:
 async def main():
     """主函数"""
     import argparse
+    from copaw.db.postgresql import get_database_manager
 
     parser = argparse.ArgumentParser(description="批量索引工具")
     parser.add_argument(
@@ -234,24 +340,34 @@ async def main():
 
     args = parser.parse_args()
 
-    indexer = BatchIndexer(
-        workspace_root=args.workspace_root,
-        tenant_id=args.tenant_id,
-    )
+    # 初始化数据库连接
+    print("正在连接数据库...")
+    db_manager = get_database_manager()
+    await db_manager.initialize()
+    print("✅ 数据库连接成功")
 
-    stats = await indexer.index_all()
+    try:
+        indexer = BatchIndexer(
+            workspace_root=args.workspace_root,
+            tenant_id=args.tenant_id,
+        )
 
-    print("\n=== 索引统计 ===")
-    print(f"工作空间: {stats['workspaces']}")
-    print(f"Agent配置: {stats['agent_configs']}")
-    print(f"Skill配置: {stats['skill_configs']}")
-    print(f"对话: {stats['conversations']}")
-    print(f"记忆文档: {stats['memory_docs']}")
+        stats = await indexer.index_all()
 
-    if stats["errors"]:
-        print(f"\n错误: {len(stats['errors'])}")
-        for error in stats["errors"]:
-            print(f"  - {error}")
+        print("\n=== 索引统计 ===")
+        print(f"工作空间: {stats['workspaces']}")
+        print(f"Agent配置: {stats['agent_configs']}")
+        print(f"Skill配置: {stats['skill_configs']}")
+        print(f"对话: {stats['conversations']}")
+        print(f"记忆文档: {stats['memory_docs']}")
+
+        if stats["errors"]:
+            print(f"\n错误: {len(stats['errors'])}")
+            for error in stats["errors"]:
+                print(f"  - {error}")
+    finally:
+        await db_manager.close()
+        print("\n✅ 数据库连接已关闭")
 
 
 if __name__ == "__main__":

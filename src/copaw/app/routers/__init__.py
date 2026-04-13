@@ -30,14 +30,15 @@ from .departments import router as departments_router
 from .tasks import router as tasks_router
 from .workflows import router as workflows_router
 from .audit import router as audit_router
+from .permission_mgmt import router as permission_mgmt_router
 # Phase A additions
-from .user_groups import router as user_groups_router
 from .dlp import router as dlp_router
 from .alerts import router as alerts_router
 from .dify import router as dify_router
 from .sso import router as sso_router
 from .skill_store import router as skill_store_router
 from .storage import router as storage_router
+from .registry import router as registry_router
 
 router = APIRouter()
 
@@ -69,14 +70,15 @@ router.include_router(departments_router)
 router.include_router(tasks_router)
 router.include_router(workflows_router)
 router.include_router(audit_router)
+router.include_router(permission_mgmt_router)
 # Phase A
-router.include_router(user_groups_router)
 router.include_router(dlp_router)
 router.include_router(alerts_router)
 router.include_router(dify_router)
 router.include_router(sso_router)
 router.include_router(skill_store_router)
 router.include_router(storage_router)
+router.include_router(registry_router)
 
 
 def create_agent_scoped_router() -> APIRouter:

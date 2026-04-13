@@ -22,7 +22,7 @@ export interface DLPEvent {
 import { request } from "../request";
 
 export const getBuiltinRules = async () => {
-  return request<DLPRule[]>("/api/enterprise/dlp/rules/builtin");
+  return request<DLPRule[]>("/enterprise/dlp/rules/builtin");
 };
 
 export const getRules = async (params?: { is_active?: boolean; offset?: number; limit?: number }) => {
@@ -31,25 +31,25 @@ export const getRules = async (params?: { is_active?: boolean; offset?: number; 
   if (params?.offset !== undefined) qs.set("offset", String(params.offset));
   if (params?.limit !== undefined) qs.set("limit", String(params.limit));
 
-  return request<{ total: number; items: DLPRule[] }>(`/api/enterprise/dlp/rules?${qs.toString()}`);
+  return request<{ total: number; items: DLPRule[] }>(`/enterprise/dlp/rules?${qs.toString()}`);
 };
 
 export const createRule = async (data: Omit<DLPRule, "id" | "is_builtin" | "created_at">) => {
-  return request<DLPRule>("/api/enterprise/dlp/rules", {
+  return request<DLPRule>("/enterprise/dlp/rules", {
     method: "POST",
     body: JSON.stringify(data),
   });
 };
 
 export const updateRule = async (id: string, data: Partial<Omit<DLPRule, "id" | "is_builtin" | "created_at">>) => {
-  return request<DLPRule>(`/api/enterprise/dlp/rules/${id}`, {
+  return request<DLPRule>(`/enterprise/dlp/rules/${id}`, {
     method: "PUT",
     body: JSON.stringify(data),
   });
 };
 
 export const deleteRule = async (id: string) => {
-  return request<{ detail: string }>(`/api/enterprise/dlp/rules/${id}`, {
+  return request<{ detail: string }>(`/enterprise/dlp/rules/${id}`, {
     method: "DELETE",
   });
 };
@@ -61,5 +61,5 @@ export const getEvents = async (params?: { rule_name?: string; action_taken?: st
   if (params?.offset !== undefined) qs.set("offset", String(params.offset));
   if (params?.limit !== undefined) qs.set("limit", String(params.limit));
 
-  return request<{ total: number; items: DLPEvent[] }>(`/api/enterprise/dlp/events?${qs.toString()}`);
+  return request<{ total: number; items: DLPEvent[] }>(`/enterprise/dlp/events?${qs.toString()}`);
 };

@@ -9,10 +9,10 @@
     {
       "id": "qwen3:0.6b",
       "name": "qwen3:0.6b",
-      "supports_multimodal": null,
-      "supports_image": null,
-      "supports_video": null,
-      "probe_source": null,
+      "supports_multimodal": false,
+      "supports_image": false,
+      "supports_video": false,
+      "probe_source": "probed",
       "generate_kwargs": {}
     },
     {
@@ -45,19 +45,19 @@
     {
       "id": "qwen3:8b",
       "name": "qwen3:8b",
-      "supports_multimodal": null,
-      "supports_image": null,
-      "supports_video": null,
-      "probe_source": null,
+      "supports_multimodal": false,
+      "supports_image": false,
+      "supports_video": false,
+      "probe_source": "probed",
       "generate_kwargs": {}
     },
     {
       "id": "gemma3:4b",
       "name": "gemma3:4b",
-      "supports_multimodal": null,
-      "supports_image": null,
-      "supports_video": null,
-      "probe_source": null,
+      "supports_multimodal": true,
+      "supports_image": true,
+      "supports_video": false,
+      "probe_source": "probed",
       "generate_kwargs": {}
     },
     {

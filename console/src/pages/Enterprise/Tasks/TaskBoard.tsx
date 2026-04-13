@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   Table, Tag, Select, Input, Space, Button,
   Modal, Form, DatePicker, message, Typography, Badge
@@ -32,6 +33,7 @@ const STATUS_TRANSITIONS: Record<TaskStatus, TaskStatus[]> = {
 };
 
 export default function TaskBoard() {
+  const { t } = useTranslation();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -67,7 +69,7 @@ export default function TaskBoard() {
       due_date: values.due_date ? dayjs(values.due_date as string).toISOString() : undefined,
     };
     await enterpriseTasksApi.create(data as any);
-    message.success("Task created");
+    message.success(t("enterprise.tasks.createSuccess"));
     setCreateOpen(false);
     form.resetFields();
     load();
@@ -75,14 +77,14 @@ export default function TaskBoard() {
 
   const handleStatusChange = async (task: Task, newStatus: TaskStatus) => {
     await enterpriseTasksApi.changeStatus(task.id, newStatus);
-    message.success(`Status → ${newStatus}`);
+    message.success(t("enterprise.tasks.statusUpdated", { status: t(`enterprise.tasks.status.${newStatus}`) }));
     load();
   };
 
   const columns = [
-    { title: "Title", dataIndex: "title", key: "title", ellipsis: true },
+    { title: t("enterprise.tasks.title"), dataIndex: "title", key: "title", ellipsis: true },
     {
-      title: "Status",
+      title: t("enterprise.tasks.status"),
       dataIndex: "status",
       key: "status",
       width: 140,
@@ -92,55 +94,55 @@ export default function TaskBoard() {
           value={s}
           style={{ width: 130 }}
           onChange={(v) => handleStatusChange(record, v)}
-          options={STATUS_TRANSITIONS[s].map((st) => ({ label: st, value: st }))}
+          options={STATUS_TRANSITIONS[s].map((st) => ({ label: t(`enterprise.tasks.status.${st}`), value: st }))}
           dropdownMatchSelectWidth={false}
         >
-          <Badge status={STATUS_COLOR[s] as any} text={s} />
+          <Badge status={STATUS_COLOR[s] as any} text={t(`enterprise.tasks.status.${s}`)} />
         </Select>
       ),
     },
     {
-      title: "Priority",
+      title: t("enterprise.tasks.priority"),
       dataIndex: "priority",
       key: "priority",
-      render: (p: TaskPriority) => <Tag color={PRIORITY_COLOR[p]}>{p}</Tag>,
+      render: (p: TaskPriority) => <Tag color={PRIORITY_COLOR[p]}>{t(`enterprise.tasks.priority.${p}`)}</Tag>,
     },
     {
-      title: "Due",
+      title: t("enterprise.tasks.dueDate"),
       dataIndex: "due_date",
       key: "due_date",
       render: (v?: string) => v ? dayjs(v).format("MMM D, YYYY") : "—",
     },
-    { title: "Created", dataIndex: "created_at", key: "created_at", render: (v: string) => dayjs(v).format("MM/DD HH:mm") },
+    { title: t("enterprise.tasks.createdAt"), dataIndex: "created_at", key: "created_at", render: (v: string) => dayjs(v).format("MM/DD HH:mm") },
   ];
 
   return (
     <div style={{ padding: 24 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 16 }}>
-        <Title level={4} style={{ margin: 0 }}>Task Board</Title>
+        <Title level={4} style={{ margin: 0 }}>{t("enterprise.tasks.title_page")}</Title>
         <Button type="primary" icon={<PlusOutlined />} onClick={() => setCreateOpen(true)}>
-          New Task
+          {t("enterprise.tasks.addTask")}
         </Button>
       </div>
 
       <Space style={{ marginBottom: 16 }}>
         <Select
-          placeholder="Status"
+          placeholder={t("enterprise.tasks.status")}
           allowClear
           style={{ width: 140 }}
           onChange={(v) => setStatusFilter(v)}
           options={(["pending", "in_progress", "blocked", "completed", "cancelled"] as TaskStatus[]).map((s) => ({
-            label: <Badge status={STATUS_COLOR[s] as any} text={s} />,
+            label: <Badge status={STATUS_COLOR[s] as any} text={t(`enterprise.tasks.status.${s}`)} />,
             value: s,
           }))}
         />
         <Select
-          placeholder="Priority"
+          placeholder={t("enterprise.tasks.priority")}
           allowClear
           style={{ width: 120 }}
           onChange={(v) => setPriorityFilter(v)}
           options={(["high", "medium", "low"] as TaskPriority[]).map((p) => ({
-            label: <Tag color={PRIORITY_COLOR[p]}>{p}</Tag>,
+            label: <Tag color={PRIORITY_COLOR[p]}>{t(`enterprise.tasks.priority.${p}`)}</Tag>,
             value: p,
           }))}
         />
@@ -156,23 +158,25 @@ export default function TaskBoard() {
       />
 
       <Modal
-        title="Create Task"
+        title={t("enterprise.tasks.createTask")}
         open={createOpen}
         onCancel={() => { setCreateOpen(false); form.resetFields(); }}
         onOk={() => form.validateFields().then(handleCreate)}
+        okText={t("common.ok")}
+        cancelText={t("common.cancel")}
         destroyOnClose
       >
         <Form form={form} layout="vertical">
-          <Form.Item name="title" label="Title" rules={[{ required: true }]}><Input /></Form.Item>
-          <Form.Item name="description" label="Description"><Input.TextArea rows={3} /></Form.Item>
-          <Form.Item name="priority" label="Priority" initialValue="medium">
+          <Form.Item name="title" label={t("enterprise.tasks.title")} rules={[{ required: true, message: t("enterprise.tasks.titleRequired") }]}><Input /></Form.Item>
+          <Form.Item name="description" label={t("enterprise.tasks.description")}><Input.TextArea rows={3} /></Form.Item>
+          <Form.Item name="priority" label={t("enterprise.tasks.priority")} initialValue="medium">
             <Select options={[
-              { label: "High", value: "high" },
-              { label: "Medium", value: "medium" },
-              { label: "Low", value: "low" },
+              { label: t("enterprise.tasks.priority.high"), value: "high" },
+              { label: t("enterprise.tasks.priority.medium"), value: "medium" },
+              { label: t("enterprise.tasks.priority.low"), value: "low" },
             ]} />
           </Form.Item>
-          <Form.Item name="due_date" label="Due Date">
+          <Form.Item name="due_date" label={t("enterprise.tasks.dueDate")}>
             <DatePicker style={{ width: "100%" }} />
           </Form.Item>
         </Form>

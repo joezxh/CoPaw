@@ -21,7 +21,7 @@ from ...enterprise.task_service import TaskService
 from ...enterprise.audit_service import AuditService, AuditAction
 from ...enterprise.middleware import get_current_user
 
-router = APIRouter(prefix="/api/enterprise/tasks", tags=["enterprise-tasks"])
+router = APIRouter(prefix="/enterprise/tasks", tags=["enterprise-tasks"])
 
 
 class TaskCreateRequest(BaseModel):

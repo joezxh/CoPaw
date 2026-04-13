@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Table, Button, Space, Modal, Form, Input, Select, Switch, message, Tabs, InputNumber } from "antd";
 import { useRequest } from "ahooks";
 import {
@@ -15,6 +16,7 @@ const { Option } = Select;
 const { TabPane } = Tabs;
 
 const AlertRules: React.FC = () => {
+  const { t } = useTranslation();
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [editingRule, setEditingRule] = useState<AlertRule | null>(null);
   const [form] = Form.useForm();
@@ -35,14 +37,14 @@ const AlertRules: React.FC = () => {
 
   const handleDelete = async (id: string) => {
     Modal.confirm({
-      title: "Are you sure you want to delete this rule?",
+      title: t("enterprise.alerts.deleteConfirm"),
       onOk: async () => {
         try {
           await deleteAlertRule(id);
-          message.success("Rule deleted successfully");
+          message.success(t("enterprise.alerts.deleteSuccess"));
           refreshRules();
         } catch (error: any) {
-          message.error(error.message || "Failed to delete rule");
+          message.error(error.message || t("enterprise.alerts.deleteFailed"));
         }
       },
     });
@@ -51,10 +53,10 @@ const AlertRules: React.FC = () => {
   const handleToggleStatus = async (id: string, is_active: boolean) => {
     try {
       await updateAlertRule(id, { is_active });
-      message.success("Rule status updated");
+      message.success(t("enterprise.alerts.statusUpdated"));
       refreshRules();
     } catch (error: any) {
-      message.error(error.message || "Failed to update rule status");
+      message.error(error.message || t("enterprise.alerts.updateFailed"));
     }
   };
 
@@ -63,10 +65,10 @@ const AlertRules: React.FC = () => {
       const values = await form.validateFields();
       if (editingRule && editingRule.id) {
         await updateAlertRule(editingRule.id, values);
-        message.success("Rule updated successfully");
+        message.success(t("enterprise.alerts.updateSuccess"));
       } else {
         await createAlertRule(values);
-        message.success("Rule created successfully");
+        message.success(t("enterprise.alerts.createSuccess"));
       }
       setIsModalVisible(false);
       refreshRules();
@@ -79,88 +81,103 @@ const AlertRules: React.FC = () => {
 
   const handleTestNotification = async () => {
     try {
-      await testNotification("This is a manual test alert from the Enterprise Console.");
-      message.success("Test notification sent successfully");
+      await testNotification(t("enterprise.alerts.testMessage"));
+      message.success(t("enterprise.alerts.testSuccess"));
       refreshEvents();
     } catch (error: any) {
-      message.error(error.message || "Failed to send test notification");
+      message.error(error.message || t("enterprise.alerts.testFailed"));
     }
   };
 
   const ruleColumns = [
-    { title: "Rule Type", dataIndex: "rule_type", key: "rule_type" },
-    { title: "Description", dataIndex: "description", key: "description" },
-    { title: "Threshold", dataIndex: "threshold", key: "threshold", render: (t: number, r: AlertRule) => `${t} per ${r.window_seconds}s` },
-    { title: "Channels", dataIndex: "notify_channels", key: "notify_channels", render: (c: string[]) => c?.join(", ") || "None" },
+    { title: t("enterprise.alerts.ruleType"), dataIndex: "rule_type", key: "rule_type" },
+    { title: t("enterprise.alerts.description"), dataIndex: "description", key: "description" },
+    { 
+      title: t("enterprise.alerts.threshold"), 
+      dataIndex: "threshold", 
+      key: "threshold", 
+      render: (threshold: number, r: AlertRule) => {
+        // Use translation function from outer scope
+        return t("enterprise.alerts.thresholdFormat", { count: threshold, window: r.window_seconds });
+      }
+    },
+    { title: t("enterprise.alerts.channels"), dataIndex: "notify_channels", key: "notify_channels", render: (c: string[]) => c?.join(", ") || t("enterprise.alerts.none") },
     {
-      title: "Status",
+      title: t("enterprise.alerts.status"),
       key: "is_active",
       render: (_: any, record: AlertRule) => (
         <Switch checked={record.is_active} onChange={(checked) => handleToggleStatus(record.id, checked)} />
       ),
     },
     {
-      title: "Actions",
+      title: t("common.actions"),
       key: "actions",
       render: (_: any, record: AlertRule) => (
         <Space size="middle">
-          <Button type="link" onClick={() => handleEdit(record)}>Edit</Button>
-          <Button type="link" danger onClick={() => handleDelete(record.id)}>Delete</Button>
+          <Button type="link" onClick={() => handleEdit(record)}>{t("common.edit")}</Button>
+          <Button type="link" danger onClick={() => handleDelete(record.id)}>{t("common.delete")}</Button>
         </Space>
       ),
     },
   ];
 
   const eventColumns = [
-    { title: "Triggered At", dataIndex: "triggered_at", key: "triggered_at", render: (text: string) => new Date(text).toLocaleString() },
-    { title: "Rule Type", dataIndex: "rule_type", key: "rule_type" },
-    { title: "Notify Status", dataIndex: "notify_status", key: "notify_status" },
-    { title: "Context", dataIndex: "context", key: "context", render: (c: any) => <pre style={{margin:0, fontSize:'12px'}}>{JSON.stringify(c, null, 2)}</pre> },
+    { title: t("enterprise.alerts.triggeredAt"), dataIndex: "triggered_at", key: "triggered_at", render: (text: string) => new Date(text).toLocaleString() },
+    { title: t("enterprise.alerts.ruleType"), dataIndex: "rule_type", key: "rule_type" },
+    { title: t("enterprise.alerts.notifyStatus"), dataIndex: "notify_status", key: "notify_status" },
+    { title: t("enterprise.alerts.context"), dataIndex: "context", key: "context", render: (c: any) => <pre style={{margin:0, fontSize:'12px'}}>{JSON.stringify(c, null, 2)}</pre> },
   ];
 
   return (
     <div style={{ padding: 24 }}>
       <div style={{ marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <h2>Security Alerts & Anomalies</h2>
+        <h2>{t("enterprise.alerts.title")}</h2>
         <Space>
-          <Button onClick={handleTestNotification}>Test Notification</Button>
+          <Button onClick={handleTestNotification}>{t("enterprise.alerts.testNotification")}</Button>
           <Button type="primary" onClick={() => { setEditingRule(null); form.resetFields(); setIsModalVisible(true); }}>
-            Create Alert Rule
+            {t("enterprise.alerts.createAlertRule")}
           </Button>
         </Space>
       </div>
 
       <Tabs defaultActiveKey="rules">
-        <TabPane tab="Alert Rules" key="rules">
+        <TabPane tab={t("enterprise.alerts.alertRules")} key="rules">
           <Table columns={ruleColumns} dataSource={rulesData || []} rowKey="id" loading={rulesLoading} pagination={false} />
         </TabPane>
-        <TabPane tab="Alert Events" key="events">
+        <TabPane tab={t("enterprise.alerts.alertEvents")} key="events">
           <Table columns={eventColumns} dataSource={eventsData?.items || []} rowKey="id" loading={eventsLoading} />
         </TabPane>
       </Tabs>
 
-      <Modal title={editingRule ? "Edit Alert Rule" : "Create Alert Rule"} open={isModalVisible} onOk={handleModalOk} onCancel={() => setIsModalVisible(false)}>
+      <Modal
+        title={editingRule ? t("enterprise.alerts.editAlertRule") : t("enterprise.alerts.createAlertRule")}
+        open={isModalVisible}
+        onOk={handleModalOk}
+        onCancel={() => setIsModalVisible(false)}
+        okText={t("common.ok")}
+        cancelText={t("common.cancel")}
+      >
         <Form form={form} layout="vertical" initialValues={{ threshold: 3, window_seconds: 300, is_active: true, notify_channels: [] }}>
-          <Form.Item name="rule_type" label="Rule Type (e.g., login_fail)" rules={[{ required: true }]}>
+          <Form.Item name="rule_type" label={t("enterprise.alerts.ruleType")} rules={[{ required: true, message: t("enterprise.alerts.ruleTypeRequired") }]}>
             <Input disabled={!!editingRule} />
           </Form.Item>
-          <Form.Item name="description" label="Description">
+          <Form.Item name="description" label={t("enterprise.alerts.description")}>
             <Input.TextArea />
           </Form.Item>
-          <Form.Item name="threshold" label="Threshold Count" rules={[{ required: true }]}>
+          <Form.Item name="threshold" label={t("enterprise.alerts.thresholdCount")} rules={[{ required: true, message: t("enterprise.alerts.thresholdCountRequired") }]}>
             <InputNumber min={1} style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="window_seconds" label="Time Window (seconds)" rules={[{ required: true }]}>
+          <Form.Item name="window_seconds" label={t("enterprise.alerts.timeWindow")} rules={[{ required: true, message: t("enterprise.alerts.timeWindowRequired") }]}>
             <InputNumber min={10} style={{ width: '100%' }} />
           </Form.Item>
-          <Form.Item name="notify_channels" label="Notification Channels">
-            <Select mode="tags" placeholder="e.g., wecom, dingtalk, email">
-              <Option value="wecom">WeCom</Option>
-              <Option value="dingtalk">DingTalk</Option>
-              <Option value="email">Email</Option>
+          <Form.Item name="notify_channels" label={t("enterprise.alerts.notificationChannels")}>
+            <Select mode="tags" placeholder={t("enterprise.alerts.channelsPlaceholder")}>
+              <Option value="wecom">{t("enterprise.alerts.channel.wecom")}</Option>
+              <Option value="dingtalk">{t("enterprise.alerts.channel.dingtalk")}</Option>
+              <Option value="email">{t("enterprise.alerts.channel.email")}</Option>
             </Select>
           </Form.Item>
-          <Form.Item name="is_active" label="Status" valuePropName="checked">
+          <Form.Item name="is_active" label={t("enterprise.alerts.status")} valuePropName="checked">
             <Switch />
           </Form.Item>
         </Form>

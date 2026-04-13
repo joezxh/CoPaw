@@ -1,1 +1,11 @@
-{}
+{
+  "memory": {
+    "D:\\projects\\copaw\\working\\workspaces\\CoPaw_QA_Agent_0.1beta1\\MEMORY.md": {
+      "path": "D:\\projects\\copaw\\working\\workspaces\\CoPaw_QA_Agent_0.1beta1\\MEMORY.md",
+      "hash": "799d0cf3e7893b50f2a0bd82fa1f07ba9e90d2597d0da688dc0f969f38f0c031",
+      "mtime_ms": 1775886530300.61,
+      "size": 500,
+      "chunk_count": 1
+    }
+  }
+}
